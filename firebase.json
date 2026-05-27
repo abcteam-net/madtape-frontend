@@ -1,0 +1,19 @@
+{
+  "auth": {
+    "providers": {
+      "emailPassword": {
+        "enabled": true
+      },
+      "googleSignIn": {
+        "enabled": true,
+        "authorizedRedirectUris": [
+          "http://localhost",
+          "http://localhost:8000",
+          "https://lyrical-country-461108-h9.firebaseapp.com",
+          "https://lyrical-country-461108-h9.web.app",
+          "https://madtape.com"
+        ]
+      }
+    }
+  }
+}
