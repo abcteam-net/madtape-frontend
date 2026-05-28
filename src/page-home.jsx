@@ -1,6 +1,11 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { VideoCard, CreatorCard } from './platform-cards.jsx';
+import { PlatformFooter } from './platform-nav.jsx';
 // Madtape AI — Homepage
 
-function HomePage({ onNav, user, onLogin }) {
+export function HomePage({ user, onLogin }) {
+  const navigate = useNavigate();
   const videos = window.VIDEOS || [];
   const challenges = window.CHALLENGES || [];
   const openChallenge = challenges.find(c => c.status === "open") || challenges[0];
@@ -51,16 +56,16 @@ function HomePage({ onNav, user, onLogin }) {
             Madtape is an innovative streaming platform dedicated to promoting film students and emerging talent. Upload your AI film, join creative challenges, and get discovered by a community shaping the future of cinema.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-            <button onClick={() => onNav("upload")} style={{
+            <button onClick={() => navigate("/upload")} style={{
               background: "#fff", color: "#000", padding: "14px 28px",
               fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
               display: "flex", alignItems: "center", gap: 8,
             }}>↑ Upload Your Film</button>
-            <button onClick={() => onNav("explore")} style={{
+            <button onClick={() => navigate("/explore")} style={{
               background: "rgba(109,109,110,0.6)", color: "#fff", padding: "14px 28px",
               fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
             }}>ⓘ Explore AI Films</button>
-            <button onClick={() => onNav("challenges")} style={{
+            <button onClick={() => navigate("/challenges")} style={{
               background: "none", color: "#fff", padding: "14px 28px",
               fontSize: 15, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.25)", cursor: "pointer",
             }}>This Week's Challenge →</button>
@@ -80,11 +85,11 @@ function HomePage({ onNav, user, onLogin }) {
       <section style={{ padding: "0 0 60px" }}>
         <div style={{ padding: "0 56px", marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
           <h2 style={{ fontSize: 22, fontWeight: 700 }}>Featured AI Films</h2>
-          <a href="#" onClick={(e) => { e.preventDefault(); onNav("explore"); }} style={{ fontSize: 13, color: "#b3b3b3", textDecoration: "none" }}>Browse all →</a>
+          <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }} style={{ fontSize: 13, color: "#b3b3b3", textDecoration: "none" }}>Browse all →</a>
         </div>
         <div style={{ display: "flex", gap: 8, padding: "20px 56px 40px", overflowX: "auto", scrollbarWidth: "none" }}>
           {videos.filter(v => v.featured).map(v => (
-            <VideoCard key={v.id} video={v} onOpen={() => onNav("video:" + v.id)} size="md" />
+            <VideoCard key={v.id} video={v} onOpen={() => navigate("/video/" + v.id)} size="md" />
           ))}
         </div>
       </section>
@@ -105,14 +110,14 @@ function HomePage({ onNav, user, onLogin }) {
                 <span>· {openChallenge.entries} entries</span>
                 <span>· {openChallenge.maxDuration} max</span>
               </div>
-              <button onClick={() => onNav("challenges")} style={{
+              <button onClick={() => navigate("/challenges")} style={{
                 background: "var(--accent)", color: "#fff", padding: "12px 24px",
                 fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
               }}>Submit Your Entry →</button>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
               {(window.VIDEOS || []).filter(v => v.challengeTag).slice(0, 4).map(v => (
-                <div key={v.id} onClick={() => onNav("video:" + v.id)} style={{ aspectRatio: "16/9", borderRadius: 4, overflow: "hidden", cursor: "pointer", position: "relative", background: "#111" }}>
+                <div key={v.id} onClick={() => navigate("/video/" + v.id)} style={{ aspectRatio: "16/9", borderRadius: 4, overflow: "hidden", cursor: "pointer", position: "relative", background: "#111" }}>
                   {v.panel && <img src={v.panel} alt={v.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />}
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.7))" }} />
                   <div style={{ position: "absolute", bottom: 6, left: 8, right: 8, fontSize: 11, fontWeight: 600, color: "#fff", lineHeight: 1.1 }}>{v.title}</div>
@@ -161,7 +166,7 @@ function HomePage({ onNav, user, onLogin }) {
               <div style={{ fontSize: 32, marginBottom: 18 }}>{item.icon}</div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 30, lineHeight: 1, marginBottom: 12, letterSpacing: "0.005em" }}>{item.title}</div>
               <p style={{ fontSize: 14, color: "#b3b3b3", lineHeight: 1.6, marginBottom: 20 }}>{item.body}</p>
-              <a href="#" onClick={(e) => { e.preventDefault(); onNav("explore"); }} style={{ fontSize: 12, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>{item.cta} →</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }} style={{ fontSize: 12, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>{item.cta} →</a>
             </div>
           ))}
         </div>
@@ -183,7 +188,7 @@ function HomePage({ onNav, user, onLogin }) {
                 </div>
               ))}
             </div>
-            <button onClick={() => onNav("upload")} style={{
+            <button onClick={() => navigate("/upload")} style={{
               background: "none", color: "#fff", padding: "12px 24px",
               fontSize: 13, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.3)",
               cursor: "pointer", marginTop: 32,
@@ -191,7 +196,7 @@ function HomePage({ onNav, user, onLogin }) {
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             {(window.CREATORS || []).slice(0, 4).map(c => (
-              <CreatorCard key={c.id} creator={c} onOpen={() => onNav("profile:" + c.id)} />
+              <CreatorCard key={c.id} creator={c} onOpen={() => navigate("/profile/" + c.id)} />
             ))}
           </div>
         </div>
@@ -210,7 +215,7 @@ function HomePage({ onNav, user, onLogin }) {
               </div>
             ))}
           </div>
-          <button onClick={() => onNav("pricing")} style={{
+          <button onClick={() => navigate("/pricing")} style={{
             background: "var(--accent)", color: "#fff", padding: "12px 28px",
             fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
           }}>See full pricing →</button>
@@ -225,12 +230,12 @@ function HomePage({ onNav, user, onLogin }) {
         </h2>
         <p style={{ fontSize: 17, color: "#b3b3b3", marginBottom: 36, maxWidth: "48ch", margin: "0 auto 36px" }}>A unique opportunity for filmmakers to present their work, build a professional community, and support student growth. This week's challenge closes in {openChallenge?.daysLeft} days.</p>
         <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-          <button onClick={() => onNav("upload")} style={{ background: "#fff", color: "#000", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>↑ Upload Your Film</button>
-          <button onClick={() => onNav("explore")} style={{ background: "rgba(109,109,110,0.5)", color: "#fff", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Explore Films</button>
+          <button onClick={() => navigate("/upload")} style={{ background: "#fff", color: "#000", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>↑ Upload Your Film</button>
+          <button onClick={() => navigate("/explore")} style={{ background: "rgba(109,109,110,0.5)", color: "#fff", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Explore Films</button>
         </div>
       </section>
 
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }

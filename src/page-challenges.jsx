@@ -1,14 +1,19 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { ChallengeCard, VideoGrid } from './platform-cards.jsx';
+import { PlatformFooter } from './platform-nav.jsx';
 // Madtape AI — Challenges page + detail
 
 const { useState: useCh } = React;
 
-function ChallengesPage({ onNav }) {
+export function ChallengesPage({ }) {
+  const navigate = useNavigate();
   const [selected, setSelected] = useCh(null);
   const challenges = window.CHALLENGES || [];
 
   if (selected) {
     const ch = challenges.find(c => c.id === selected);
-    return ch ? <ChallengeDetail challenge={ch} onBack={() => setSelected(null)} onNav={onNav} /> : null;
+    return ch ? <ChallengeDetail challenge={ch} onBack={() => setSelected(null)} /> : null;
   }
 
   const open = challenges.filter(c => c.status === "open" || c.status === "closing");
@@ -96,12 +101,13 @@ function ChallengesPage({ onNav }) {
           <div>· No hateful, sexual, or illegal content</div>
         </div>
       </div>
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }
 
-function ChallengeDetail({ challenge: ch, onBack, onNav }) {
+function ChallengeDetail({ challenge: ch, onBack}) {
+  const navigate = useNavigate();
   const entries = (window.VIDEOS || []).filter(v => v.challengeTag);
   const statusColors = { open:"#46d369", closing:"#f5c518", voting:"#5851db", closed:"#555" };
 
@@ -124,7 +130,7 @@ function ChallengeDetail({ challenge: ch, onBack, onNav }) {
           <p style={{ fontSize: 17, color: "#b3b3b3", maxWidth: "56ch", lineHeight: 1.5, marginBottom: 32 }}>{ch.brief}</p>
           <div style={{ display: "flex", gap: 12 }}>
             {(ch.status === "open" || ch.status === "closing") && (
-              <button onClick={() => onNav("upload")} style={{ background: "var(--accent)", color: "#fff", padding: "12px 24px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Submit Your Entry →</button>
+              <button onClick={() => navigate("/upload")} style={{ background: "var(--accent)", color: "#fff", padding: "12px 24px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Submit Your Entry →</button>
             )}
             <div style={{ display: "flex", gap: 24, alignItems: "center", fontSize: 13, color: "#777" }}>
               <span><b style={{ color: "#fff" }}>{ch.entries}</b> entries</span>
@@ -139,7 +145,7 @@ function ChallengeDetail({ challenge: ch, onBack, onNav }) {
         {/* Entries */}
         <div style={{ padding: "40px 56px 60px", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
           <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Entries · {ch.entries}</h3>
-          <VideoGrid videos={entries} onOpen={(id) => onNav("video:" + id)} cols={2} />
+          <VideoGrid videos={entries} onOpen={(id) => navigate("/video/" + id)} cols={2} />
         </div>
 
         {/* Sidebar */}
@@ -170,7 +176,7 @@ function ChallengeDetail({ challenge: ch, onBack, onNav }) {
           </div>
         </div>
       </div>
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }

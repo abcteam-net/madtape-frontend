@@ -1,3 +1,6 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { PlatformFooter } from './platform-nav.jsx';
 // Madtape AI — Trailers page with embedded YouTube player
 
 const TRAILERS = [
@@ -101,7 +104,8 @@ const TRAILERS = [
 
 window.TRAILERS = TRAILERS;
 
-function TrailersPage({ onNav }) {
+export function TrailersPage({ }) {
+  const navigate = useNavigate();
   const [active, setActive] = React.useState(TRAILERS[0]);
   const [playing, setPlaying] = React.useState(false);
 
@@ -217,14 +221,14 @@ function TrailersPage({ onNav }) {
               Have an AI film trailer? Submit it to be featured here.
             </div>
             <button
-              onClick={() => onNav("upload")}
+              onClick={() => navigate("/upload")}
               style={{ width: "100%", background: "var(--accent)", color: "#fff", padding: "10px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}
             >↑ Submit Your Trailer</button>
           </div>
         </div>
       </div>
 
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }

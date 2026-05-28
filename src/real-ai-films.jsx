@@ -1,3 +1,4 @@
+import React from 'react';
 // Real AI cinema catalog — sourced from WAIFF Nice 2025, Runway AI Film Festival,
 // BestAIFilms.com, and verified creator credits. YouTube links go to search pages
 // since direct video URLs require manual verification.

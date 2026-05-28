@@ -1,17 +1,59 @@
-// Madtape AI — Upload flow + Generate page + Pricing + Dashboard
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { StatusPill, fmtNum } from './platform-cards.jsx';
+import { PlatformFooter } from './platform-nav.jsx';
 
 const { useState: useUG } = React;
 
 // ── UPLOAD PAGE ──────────────────────────────────────────────────────────────
-function UploadPage({ onNav, user, onLogin }) {
+export function UploadPage({ user, onLogin }) {
+  const navigate = useNavigate();
   const [step, setStep] = useUG(1);
-  const [file, setFile] = useUG(null);
+  const [youtubeUrl, setYoutubeUrl] = useUG("");
+  const [youtubeId, setYoutubeId] = useUG("");
+  const [urlError, setUrlError] = useUG("");
   const [form, setForm] = useUG({
     title: "", desc: "", prompt: "", model: "", category: "", challenge: "", isPublic: true, ownsRights: false,
   });
   const [submitted, setSubmitted] = useUG(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+
+
+  const parseYouTubeId = (url) => {
+    if (!url) return "";
+    const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|youtube\.com\/shorts\/)([^"&?\/\s]{11})/i;
+    const match = url.match(regExp);
+    return match ? match[1] : "";
+  };
+
+  const handleSubmit = () => {
+    const videoId = form.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || `user-video-${Date.now()}`;
+    const newVideo = {
+      id: videoId,
+      title: form.title,
+      creator: user.id || user.uid || "kira-motion",
+      duration: "00:15",
+      model: form.model,
+      category: form.category,
+      views: 0,
+      likes: 0,
+      color: "#2C3E6B",
+      panel: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
+      challengeTag: form.challenge ? (window.CHALLENGES || []).find(c => c.id === form.challenge)?.title : null,
+      status: "published",
+      prompt: form.prompt,
+      year: 2026,
+      featured: false,
+      youtubeId: youtubeId
+    };
+
+    if (window.VIDEOS) {
+      window.VIDEOS = [newVideo, ...window.VIDEOS];
+    }
+    setSubmitted(true);
+  };
 
   if (!user) return (
     <div style={{ paddingTop: 80, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 20 }}>
@@ -28,8 +70,8 @@ function UploadPage({ onNav, user, onLogin }) {
       <p style={{ color: "#b3b3b3", fontSize: 16, maxWidth: "40ch" }}>Your film is under review. We'll notify you when it's approved. Most reviews complete within 24 hours.</p>
       <StatusPill status="under-review" />
       <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-        <button onClick={() => onNav("dashboard")} style={{ background: "#fff", color: "#000", padding: "11px 22px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>View in Dashboard</button>
-        <button onClick={() => { setStep(1); setFile(null); setForm({ title:"",desc:"",prompt:"",model:"",category:"",challenge:"",isPublic:true,ownsRights:false }); setSubmitted(false); }} style={{ background: "none", color: "#fff", padding: "11px 22px", fontSize: 14, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>Upload Another</button>
+        <button onClick={() => navigate("/dashboard")} style={{ background: "#fff", color: "#000", padding: "11px 22px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>View in Dashboard</button>
+        <button onClick={() => { setStep(1); setYoutubeUrl(""); setYoutubeId(""); setForm({ title:"",desc:"",prompt:"",model:"",category:"",challenge:"",isPublic:true,ownsRights:false }); setSubmitted(false); }} style={{ background: "none", color: "#fff", padding: "11px 22px", fontSize: 14, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>Upload Another</button>
       </div>
     </div>
   );
@@ -51,27 +93,98 @@ function UploadPage({ onNav, user, onLogin }) {
 
         <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, lineHeight: 0.9, marginBottom: 32, letterSpacing: "0.005em" }}>Upload Your AI Film</h1>
 
-        {/* Step 1: File */}
+        {/* Step 1: YouTube URL */}
         {step === 1 && (
           <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
             <div style={{
-              border: "2px dashed rgba(255,255,255,0.15)", borderRadius: 6,
-              padding: "60px 40px", textAlign: "center", background: "rgba(255,255,255,0.03)",
-              cursor: "pointer", transition: "border-color 200ms",
-            }}
-              onMouseEnter={e => e.currentTarget.style.borderColor = "rgba(229,9,20,0.5)"}
-              onMouseLeave={e => e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"}
-              onClick={() => document.getElementById("file-in")?.click()}
-            >
-              <div style={{ fontSize: 40, marginBottom: 12 }}>↑</div>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, marginBottom: 8 }}>{file ? file.name : "Drop your film here"}</div>
-              <div style={{ fontSize: 13, color: "#777" }}>MP4, MOV, WebM · 4–15 seconds · 16:9 preferred · Max 500MB</div>
-              <input id="file-in" type="file" accept="video/*" style={{ display: "none" }} onChange={e => setFile(e.target.files[0])} />
+              border: "1px solid rgba(255,255,255,0.1)", borderRadius: 6,
+              padding: "40px 30px", background: "rgba(255,255,255,0.02)",
+              display: "flex", flexDirection: "column", gap: 20
+            }}>
+              <div>
+                <label style={labelStyle}>YouTube Video URL *</label>
+                <input
+                  type="text"
+                  style={{ ...inputStyle, fontSize: 15 }}
+                  placeholder="e.g. https://www.youtube.com/watch?v=B-lfTmZp1DE"
+                  value={youtubeUrl}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setYoutubeUrl(val);
+                    const id = parseYouTubeId(val);
+                    if (val && !id) {
+                      setUrlError("Invalid YouTube URL. Make sure it is a valid watch link, shorts link, embed link, or short youtu.be link.");
+                      setYoutubeId("");
+                    } else {
+                      setUrlError("");
+                      setYoutubeId(id);
+                    }
+                  }}
+                />
+                {urlError && <div style={{ color: "var(--accent)", fontSize: 12, marginTop: 6, fontWeight: 500 }}>{urlError}</div>}
+              </div>
+
+              {youtubeId && (
+                <div style={{ animation: "fadeIn 200ms ease-out" }}>
+                  <label style={labelStyle}>Live Video Preview</label>
+                  <div style={{
+                    width: "100%",
+                    maxWidth: 360,
+                    aspectRatio: "16/9",
+                    borderRadius: 4,
+                    overflow: "hidden",
+                    position: "relative",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.5)"
+                  }}>
+                    <img
+                      src={`https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`}
+                      alt="YouTube Preview"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={(e) => {
+                        e.target.src = `https://img.youtube.com/vi/${youtubeId}/0.jpg`;
+                      }}
+                    />
+                    <div style={{
+                      position: "absolute",
+                      bottom: 8,
+                      right: 8,
+                      background: "rgba(0,0,0,0.8)",
+                      color: "#fff",
+                      fontSize: 10,
+                      padding: "3px 6px",
+                      borderRadius: 2,
+                      fontWeight: 600,
+                      letterSpacing: "0.05em"
+                    }}>
+                      ID: {youtubeId}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
             <div style={{ padding: "16px 20px", background: "rgba(245,197,24,0.07)", border: "1px solid rgba(245,197,24,0.2)", borderRadius: 4, fontSize: 13, color: "#b3b3b3" }}>
               <b style={{ color: "#f5c518" }}>Platform rules: </b> Short films must be 4–15 seconds. Features must be ≥ 1h 45m. All content must be AI-generated or AI-assisted.
             </div>
-            <button onClick={() => setStep(2)} disabled={!file} style={{ alignSelf: "flex-start", background: file ? "var(--accent)" : "#333", color: "#fff", padding: "12px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: file ? "pointer" : "not-allowed" }}>Continue →</button>
+            <button 
+              onClick={() => setStep(2)} 
+              disabled={!youtubeId} 
+              style={{ 
+                alignSelf: "flex-start", 
+                background: youtubeId ? "var(--accent)" : "#333", 
+                color: "#fff", 
+                padding: "12px 28px", 
+                fontSize: 14, 
+                fontWeight: 700, 
+                borderRadius: 4, 
+                border: "none", 
+                cursor: youtubeId ? "pointer" : "not-allowed",
+                transition: "background 150ms"
+              }}
+            >
+              Continue →
+            </button>
           </div>
         )}
 
@@ -138,10 +251,10 @@ function UploadPage({ onNav, user, onLogin }) {
                 <div style={{ fontSize: 11, color: "#777", marginBottom: 4 }}>FILM</div>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32 }}>{form.title || "Untitled"}</div>
               </div>
-              {[["File", file?.name],["Model", form.model],["Category", form.category],["Challenge", form.challenge ? (window.CHALLENGES||[]).find(c=>c.id===form.challenge)?.title : "None"],["Visibility", form.isPublic ? "Public" : "Private draft"]].map(([k,v]) => (
+              {[["YouTube URL", youtubeUrl],["YouTube ID", youtubeId],["Model", form.model],["Category", form.category],["Challenge", form.challenge ? (window.CHALLENGES||[]).find(c=>c.id===form.challenge)?.title : "None"],["Visibility", form.isPublic ? "Public" : "Private draft"]].map(([k,v]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", padding: "12px 24px", borderBottom: "1px solid rgba(255,255,255,0.05)", fontSize: 13 }}>
                   <span style={{ color: "#777" }}>{k}</span>
-                  <span style={{ color: "#fff" }}>{v || "—"}</span>
+                  <span style={{ color: "#fff", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: "70%" }} title={v}>{v || "—"}</span>
                 </div>
               ))}
             </div>
@@ -150,7 +263,7 @@ function UploadPage({ onNav, user, onLogin }) {
             </div>
             <div style={{ display: "flex", gap: 12 }}>
               <button onClick={() => setStep(2)} style={{ background: "none", color: "#b3b3b3", padding: "12px 20px", fontSize: 14, borderRadius: 4, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }}>← Edit</button>
-              <button onClick={() => setSubmitted(true)} style={{ background: "var(--accent)", color: "#fff", padding: "12px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Submit for Review</button>
+              <button onClick={handleSubmit} style={{ background: "var(--accent)", color: "#fff", padding: "12px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Submit for Review</button>
             </div>
           </div>
         )}
@@ -160,7 +273,8 @@ function UploadPage({ onNav, user, onLogin }) {
 }
 
 // ── GENERATE PAGE ─────────────────────────────────────────────────────────────
-function GeneratePage({ onNav, user, onLogin }) {
+export function GeneratePage({ user, onLogin }) {
+  const navigate = useNavigate();
   const [mode, setMode] = useUG("text");
   const [prompt, setPrompt] = useUG("");
   const [duration, setDuration] = useUG("15");
@@ -226,7 +340,7 @@ function GeneratePage({ onNav, user, onLogin }) {
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#46d369" }}>✓ Generation Complete</div>
                 <p style={{ fontSize: 13, color: "#b3b3b3" }}>Your film has been saved to drafts. Add metadata and submit for review.</p>
                 <div style={{ display: "flex", gap: 10 }}>
-                  <button onClick={() => onNav("upload")} style={{ background: "var(--accent)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Add Details & Publish</button>
+                  <button onClick={() => navigate("/upload")} style={{ background: "var(--accent)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Add Details & Publish</button>
                   <button onClick={() => setDone(false)} style={{ background: "none", color: "#b3b3b3", padding: "10px 16px", fontSize: 13, borderRadius: 4, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }}>Generate Another</button>
                 </div>
               </div>
@@ -252,7 +366,7 @@ function GeneratePage({ onNav, user, onLogin }) {
             <div style={{ padding: "14px 16px", background: "rgba(245,197,24,0.06)", border: "1px solid rgba(245,197,24,0.15)", borderRadius: 4, fontSize: 12, color: "#b3b3b3", lineHeight: 1.5 }}>
               <b style={{ color: "#f5c518" }}>Note: </b>Credits are deducted on successful generation. Failed jobs are refunded or offered a free retry.
             </div>
-            <button onClick={() => onNav("pricing")} style={{ background: "none", color: "#b3b3b3", padding: "10px", fontSize: 12, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>View pricing & credit plans →</button>
+            <button onClick={() => navigate("/pricing")} style={{ background: "none", color: "#b3b3b3", padding: "10px", fontSize: 12, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>View pricing & credit plans →</button>
           </div>
         </div>
       </div>
@@ -260,9 +374,243 @@ function GeneratePage({ onNav, user, onLogin }) {
   );
 }
 
+// ── STRIPE CHECKOUT MODAL ──────────────────────────────────────────────────
+export function StripeCheckoutModal({ plan, user, onClose, onPaymentSuccess }) {
+  const [cardNumber, setCardNumber] = React.useState("");
+  const [expiry, setExpiry] = React.useState("");
+  const [cvc, setCvc] = React.useState("");
+  const [name, setName] = React.useState("");
+  const [processing, setProcessing] = React.useState(false);
+  const [success, setSuccess] = React.useState(false);
+  const [error, setError] = React.useState("");
+
+  const formatCardNumber = (value) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    const matches = v.match(/\d{4,16}/g);
+    const match = (matches && matches[0]) || "";
+    const parts = [];
+
+    for (let i = 0, len = match.length; i < len; i += 4) {
+      parts.push(match.substring(i, i + 4));
+    }
+
+    if (parts.length > 0) {
+      return parts.join(" ");
+    } else {
+      return v;
+    }
+  };
+
+  const formatExpiry = (value) => {
+    const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
+    if (v.length >= 2) {
+      return v.substring(0, 2) + "/" + v.substring(2, 4);
+    }
+    return v;
+  };
+
+  const handlePay = (e) => {
+    e.preventDefault();
+    if (cardNumber.replace(/\s/g, "").length < 16) {
+      setError("Please enter a valid 16-digit card number.");
+      return;
+    }
+    if (expiry.length < 5) {
+      setError("Please enter a valid expiry date (MM/YY).");
+      return;
+    }
+    if (cvc.length < 3) {
+      setError("Please enter a valid 3-digit CVC.");
+      return;
+    }
+    if (!name.trim()) {
+      setError("Please enter the cardholder's name.");
+      return;
+    }
+
+    setError("");
+    setProcessing(true);
+
+    setTimeout(() => {
+      const cleanCard = cardNumber.replace(/\s/g, "");
+      if (cleanCard === "4242424242424242") {
+        setProcessing(false);
+        setSuccess(true);
+        setTimeout(() => {
+          onPaymentSuccess();
+        }, 1500);
+      } else {
+        setProcessing(false);
+        setError("Your card was declined. Please try using Stripe's standard test card: 4242 4242 4242 4242.");
+      }
+    }, 2200);
+  };
+
+  React.useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const inputStyle = { width: "100%", background: "#1f1f1f", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 4, padding: "12px 14px", color: "#fff", fontFamily: "inherit", fontSize: 14, outline: "none" };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      background: "rgba(0, 0, 0, 0.85)", backdropFilter: "blur(8px)"
+    }}>
+      <div 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="checkout-title"
+        style={{
+          width: "100%", maxWidth: 440,
+          background: "#141414", border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 8, padding: "32px 28px", color: "#fff",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.6)",
+          position: "relative",
+          animation: "fadeIn 250ms cubic-bezier(.2,.8,.2,1)"
+        }}
+      >
+        <button 
+          onClick={onClose}
+          aria-label="Close Checkout"
+          style={{
+            position: "absolute", top: 18, right: 18,
+            background: "none", border: "none", color: "#555",
+            fontSize: 20, cursor: "pointer", transition: "color 150ms"
+          }}
+          onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+          onMouseLeave={e => e.currentTarget.style.color = "#555"}
+        >
+          ✕
+        </button>
+
+        {success ? (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 0", textAlign: "center", gap: 16 }}>
+            <div style={{ fontSize: 64, color: "var(--good)", animation: "pulse 1.5s infinite" }}>✓</div>
+            <h2 id="checkout-title" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, letterSpacing: "0.02em", margin: 0 }}>Payment Successful!</h2>
+            <p style={{ color: "#b3b3b3", fontSize: 14, margin: 0 }}>Welcome to the <b>{plan.name}</b> plan. Upgrading your account...</p>
+          </div>
+        ) : (
+          <form onSubmit={handlePay} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--accent)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "var(--accent)" }} />
+                Secure Stripe Checkout
+              </div>
+              <h2 id="checkout-title" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, lineHeight: 1, letterSpacing: "0.01em", margin: 0 }}>Subscribe to {plan.name}</h2>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", borderBottom: "1px solid rgba(255,255,255,0.06)", paddingBottom: 16, marginTop: 8 }}>
+                <span style={{ fontSize: 13, color: "#777" }}>Billed monthly</span>
+                <span style={{ fontSize: 24, fontWeight: 800, fontFamily: "'Bebas Neue', sans-serif" }}>€{plan.price}<span style={{ fontSize: 12, color: "#777", textTransform: "lowercase", fontWeight: 400 }}>/mo</span></span>
+              </div>
+            </div>
+
+            {error && (
+              <div style={{ padding: "10px 14px", background: "rgba(229,9,20,0.08)", border: "1px solid rgba(229,9,20,0.2)", borderRadius: 4, fontSize: 12, color: "#f87171", lineHeight: 1.5 }}>
+                {error}
+              </div>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div>
+                <label style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 6, display: "block" }}>Card Number</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    type="text"
+                    required
+                    maxLength={19}
+                    placeholder="4242 4242 4242 4242"
+                    style={{ ...inputStyle, fontFamily: "monospace", fontSize: 15, paddingRight: 40 }}
+                    value={cardNumber}
+                    onChange={e => setCardNumber(formatCardNumber(e.target.value))}
+                  />
+                  <div style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 18, color: "#555" }}>💳</div>
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <div>
+                  <label style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 6, display: "block" }}>Expiry Date</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={5}
+                    placeholder="MM/YY"
+                    style={{ ...inputStyle, fontFamily: "monospace", fontSize: 15, textAlign: "center" }}
+                    value={expiry}
+                    onChange={e => setExpiry(formatExpiry(e.target.value))}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 6, display: "block" }}>CVC</label>
+                  <input
+                    type="password"
+                    required
+                    maxLength={3}
+                    placeholder="•••"
+                    style={{ ...inputStyle, fontFamily: "monospace", fontSize: 15, textAlign: "center" }}
+                    value={cvc}
+                    onChange={e => setCvc(e.target.value.replace(/[^0-9]/g, ""))}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: 10, letterSpacing: "0.08em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 6, display: "block" }}>Cardholder Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Kira Hoffmann"
+                  style={{ ...inputStyle, fontSize: 14 }}
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={processing}
+              style={{
+                width: "100%", background: processing ? "#333" : "var(--accent)", color: "#fff",
+                padding: "14px", borderRadius: 4, border: "none", fontSize: 14, fontWeight: 700,
+                cursor: processing ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+                transition: "background 150ms", marginTop: 8
+              }}
+            >
+              {processing ? (
+                <>
+                  <span className="generating" style={{ marginRight: -10 }} />
+                  Processing payment...
+                </>
+              ) : (
+                `Pay €${plan.price}`
+              )}
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, fontSize: 11, color: "#555", textAlign: "center" }}>
+              <span>🔒 Encrypted checkout. Billed by Madtape.</span>
+            </div>
+          </form>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── PRICING PAGE ──────────────────────────────────────────────────────────────
-function PricingPage({ onNav }) {
+export function PricingPage({ user, onLogin, setUser }) {
+  const navigate = useNavigate();
   const plans = window.PLATFORM_PLANS || [];
+  const [selectedPlan, setSelectedPlan] = useUG(null);
+
+  const onNav = window.onNav || (() => null);
+
   return (
     <div style={{ paddingTop: 80 }}>
       <div style={{ padding: "60px 56px 0", textAlign: "center" }}>
@@ -307,7 +655,24 @@ function PricingPage({ onNav }) {
                 </div>
               ))}
             </div>
-            <button onClick={() => onNav("upload")} style={{ width: "100%", background: p.popular ? "var(--accent)" : "rgba(255,255,255,0.08)", color: "#fff", padding: "11px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>{p.cta}</button>
+            <button 
+              onClick={() => {
+                if (p.id === "free") {
+                  navigate("/upload");
+                } else if (p.id === "studio") {
+                  window.location.href = "mailto:studios@madtape.com?subject=Studio%20Plan%20Inquiry";
+                } else {
+                  if (!user) {
+                    onLogin();
+                  } else {
+                    setSelectedPlan(p);
+                  }
+                }
+              }} 
+              style={{ width: "100%", background: p.popular ? "var(--accent)" : "rgba(255,255,255,0.08)", color: "#fff", padding: "11px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}
+            >
+              {user && user.plan === p.id ? "Current Plan" : p.cta}
+            </button>
           </div>
         ))}
       </div>
@@ -315,14 +680,33 @@ function PricingPage({ onNav }) {
         <b style={{ color: "#fff" }}>How credits work — </b> 1 credit = 4s video at 720p. 15s videos cost 3–5 credits depending on resolution. Failed generations are refunded or offered a free retry. Credits never expire.
       </div>
       <div style={{ padding: "60px 56px 80px" }}>
-        <PlatformFooter onNav={onNav} />
+        <PlatformFooter />
       </div>
+
+      {selectedPlan && (
+        <StripeCheckoutModal 
+          plan={selectedPlan} 
+          user={user}
+          onClose={() => setSelectedPlan(null)} 
+          onPaymentSuccess={() => {
+            const updated = {
+              ...user,
+              plan: selectedPlan.id,
+              balance: selectedPlan.credits || 0
+            };
+            setUser(updated);
+            setSelectedPlan(null);
+            navigate("/dashboard");
+          }}
+        />
+      )}
     </div>
   );
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────────────────────────
-function DashboardPage({ user, onNav, onLogin }) {
+export function DashboardPage({ user, onNav, onLogin }) {
+  const navigate = useNavigate();
   if (!user) return (
     <div style={{ paddingTop: 80, minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 16 }}>
       <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48 }}>Dashboard</div>
@@ -335,8 +719,13 @@ function DashboardPage({ user, onNav, onLogin }) {
   const stats = [
     { l: "Total Views", v: "24.8K" }, { l: "Total Likes", v: "3.2K" },
     { l: "Films", v: "7" }, { l: "Challenge entries", v: "3" },
-    { l: "Credits left", v: "28" }, { l: "Ranking", v: "#42" },
+    { l: "Credits left", v: String(user.balance !== undefined ? user.balance : 0) }, { l: "Ranking", v: "#42" },
   ];
+
+  const planName = user.plan === "creator" ? "Creator plan" : user.plan === "starter" ? "Starter plan" : user.plan === "pro" ? "Pro plan" : "Free plan";
+  const planLimit = user.plan === "creator" ? 40 : user.plan === "starter" ? 10 : user.plan === "pro" ? 120 : 0;
+  const balanceVal = user.balance !== undefined ? user.balance : 0;
+  const progressPercent = planLimit > 0 ? (balanceVal / planLimit) * 100 : 0;
 
   return (
     <div style={{ paddingTop: 80, minHeight: "100vh" }}>
@@ -347,8 +736,8 @@ function DashboardPage({ user, onNav, onLogin }) {
             <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, lineHeight: 0.9, letterSpacing: "0.005em" }}>{user.name}</h1>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => onNav("upload")} style={{ background: "var(--accent)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>↑ Upload Film</button>
-            <button onClick={() => onNav("generate")} style={{ background: "rgba(255,255,255,0.08)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>⚡ Generate</button>
+            <button onClick={() => navigate("/upload")} style={{ background: "var(--accent)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>↑ Upload Film</button>
+            <button onClick={() => navigate("/generate")} style={{ background: "rgba(255,255,255,0.08)", color: "#fff", padding: "10px 20px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>⚡ Generate</button>
           </div>
         </div>
 
@@ -367,7 +756,7 @@ function DashboardPage({ user, onNav, onLogin }) {
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 18 }}>
               <h3 style={{ fontSize: 18, fontWeight: 700 }}>Your Films</h3>
-              <a href="#" onClick={(e) => { e.preventDefault(); onNav("explore"); }} style={{ fontSize: 12, color: "#777", textDecoration: "none" }}>View all</a>
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }} style={{ fontSize: 12, color: "#777", textDecoration: "none" }}>View all</a>
             </div>
             {myVideos.map(v => (
               <div key={v.id} style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px 0", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
@@ -388,14 +777,14 @@ function DashboardPage({ user, onNav, onLogin }) {
           <div>
             <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 18 }}>Credits</h3>
             <div style={{ padding: "24px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 6, marginBottom: 14 }}>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, color: "#fff", lineHeight: 1 }}>28</div>
-              <div style={{ fontSize: 12, color: "#777", marginTop: 4, marginBottom: 20 }}>credits remaining · Creator plan</div>
+              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 52, color: "#fff", lineHeight: 1 }}>{balanceVal}</div>
+              <div style={{ fontSize: 12, color: "#777", marginTop: 4, marginBottom: 20 }}>credits remaining · {planName}</div>
               <div style={{ height: 4, background: "rgba(255,255,255,0.08)", borderRadius: 2, marginBottom: 8 }}>
-                <div style={{ height: "100%", width: "70%", background: "#46d369", borderRadius: 2 }} />
+                <div style={{ height: "100%", width: `${progressPercent}%`, background: "#46d369", borderRadius: 2 }} />
               </div>
-              <div style={{ fontSize: 11, color: "#555" }}>28 of 40 credits remaining this month</div>
+              <div style={{ fontSize: 11, color: "#555" }}>{balanceVal} of {planLimit} credits remaining this month</div>
             </div>
-            <button onClick={() => onNav("pricing")} style={{ width: "100%", background: "rgba(255,255,255,0.06)", color: "#fff", padding: "11px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>Upgrade plan →</button>
+            <button onClick={() => navigate("/pricing")} style={{ width: "100%", background: "rgba(255,255,255,0.06)", color: "#fff", padding: "11px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer" }}>Upgrade plan →</button>
           </div>
         </div>
       </div>

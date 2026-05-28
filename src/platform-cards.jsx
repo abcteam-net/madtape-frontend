@@ -1,8 +1,9 @@
+import React from 'react';
 // Madtape AI — card components
 
 const { useState: useStateC } = React;
 
-function shadeHex(hex, amt) {
+export function shadeHex(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
   let r = (n >> 16) + amt; r = Math.max(0, Math.min(255, r));
   let g = ((n >> 8) & 0xff) + amt; g = Math.max(0, Math.min(255, g));
@@ -10,13 +11,13 @@ function shadeHex(hex, amt) {
   return "#" + ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
 }
 
-function fmtNum(n) {
+export function fmtNum(n) {
   if (n >= 1000) return (n / 1000).toFixed(1).replace(".0", "") + "K";
   return String(n);
 }
 
 // ── VIDEO CARD ──────────────────────────────────────────────────────────────
-function VideoCard({ video, onOpen, size = "md" }) {
+export function VideoCard({ video, onOpen, size = "md" }) {
   const [hovered, setHovered] = useStateC(false);
   const [showTip, setShowTip] = useStateC(false);
   const creator = (window.CREATORS || []).find(c => c.id === video.creator);
@@ -119,7 +120,7 @@ function VideoCard({ video, onOpen, size = "md" }) {
   );
 }
 
-function VideoGrid({ videos, onOpen, cols = 4 }) {
+export function VideoGrid({ videos, onOpen, cols = 4 }) {
   const [tipVideo, setTipVideo] = useStateC(null);
   return (
     <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 24 }}>
@@ -165,7 +166,7 @@ function VideoGrid({ videos, onOpen, cols = 4 }) {
 }
 
 // ── CHALLENGE CARD ────────────────────────────────────────────────────────────
-function ChallengeCard({ challenge, onOpen }) {
+export function ChallengeCard({ challenge, onOpen }) {
   const statusColors = { open: "#46d369", closing: "#f5c518", voting: "#5851db", closed: "#777", judging: "#C8956C" };
   const statusLabels = { open: "OPEN", closing: "CLOSING SOON", voting: "VOTING NOW", closed: "CLOSED", judging: "JUDGING" };
 
@@ -204,7 +205,7 @@ function ChallengeCard({ challenge, onOpen }) {
 }
 
 // ── CREATOR CARD ─────────────────────────────────────────────────────────────
-function CreatorCard({ creator, onOpen }) {
+export function CreatorCard({ creator, onOpen }) {
   return (
     <div onClick={() => onOpen && onOpen(creator.id)} style={{
       background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)",
@@ -237,7 +238,7 @@ function CreatorCard({ creator, onOpen }) {
 }
 
 // ── STATUS PILL ───────────────────────────────────────────────────────────────
-function StatusPill({ status }) {
+export function StatusPill({ status }) {
   const map = {
     published: { bg: "rgba(70,211,105,0.15)", color: "#46d369", label: "Published" },
     "under-review": { bg: "rgba(245,197,24,0.15)", color: "#f5c518", label: "Under Review" },
@@ -260,6 +261,37 @@ function TipModal({ video, user, onLogin, onClose }) {
   const amounts = [1, 5, 10, 20];
   const final = custom ? parseInt(custom) || 0 : amt;
 
+  const firstButtonRef = React.useRef(null);
+  const modalRef = React.useRef(null);
+
+  React.useEffect(() => {
+    firstButtonRef.current?.focus();
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const handleTabKey = (e) => {
+    if (e.key !== 'Tab') return;
+    const focusable = modalRef.current?.querySelectorAll('button, [href], input, select, textarea, [tabindex="0"]');
+    if (!focusable || focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey) {
+      if (document.activeElement === first) {
+        last.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === last) {
+        first.focus();
+        e.preventDefault();
+      }
+    }
+  };
+
   // Revenue split: 50% creator, 10% backers, 40% Madtape
   const toCreator = (final * 0.50).toFixed(2);
   const toBackers = (final * 0.10).toFixed(2);
@@ -272,15 +304,22 @@ function TipModal({ video, user, onLogin, onClose }) {
   };
 
   return (
-    <div onClick={onClose} style={{
+    <div onKeyDown={handleTabKey} onClick={onClose} style={{
       position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
       zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center",
     }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        background: "#141414", border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 8, width: 400, maxWidth: "92vw",
-        overflow: "hidden", position: "relative",
-      }}>
+      <div 
+        ref={modalRef}
+        onClick={e => e.stopPropagation()} 
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="tip-modal-title"
+        style={{
+          background: "#141414", border: "1px solid rgba(255,255,255,0.1)",
+          borderRadius: 8, width: 400, maxWidth: "92vw",
+          overflow: "hidden", position: "relative",
+        }}
+      >
         {/* Accent top bar */}
         <div style={{ height: 3, background: "var(--accent)" }} />
 
@@ -289,10 +328,10 @@ function TipModal({ video, user, onLogin, onClose }) {
           {video.panel && <img src={video.panel} alt={video.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", opacity: 0.5 }} />}
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent, rgba(20,20,20,0.95))" }} />
           <div style={{ position: "absolute", bottom: 12, left: 16, right: 16 }}>
-            <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#fff", lineHeight: 1 }}>{video.title}</div>
+            <div id="tip-modal-title" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 22, color: "#fff", lineHeight: 1 }}>{video.title}</div>
             <div style={{ fontSize: 11, color: "#b3b3b3", marginTop: 3 }}>by {creator?.name || "Creator"}</div>
           </div>
-          <span onClick={onClose} style={{ position: "absolute", top: 10, right: 14, cursor: "pointer", color: "#777", fontSize: 20, zIndex: 1 }}>×</span>
+          <button onClick={onClose} style={{ position: "absolute", top: 10, right: 14, cursor: "pointer", color: "#777", fontSize: 20, zIndex: 1, background: "none", border: "none" }} aria-label="Close modal" title="Close">×</button>
         </div>
 
         <div style={{ padding: "22px 24px 24px" }}>
@@ -313,22 +352,27 @@ function TipModal({ video, user, onLogin, onClose }) {
 
               {/* Amount buttons */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8, marginBottom: 14 }}>
-                {amounts.map(a => (
-                  <button key={a} onClick={() => { setAmt(a); setCustom(""); }} style={{
-                    padding: "12px 0", borderRadius: 4,
-                    background: (custom === "" && amt === a) ? "var(--accent)" : "rgba(255,255,255,0.06)",
-                    border: "1px solid " + ((custom === "" && amt === a) ? "var(--accent)" : "rgba(255,255,255,0.1)"),
-                    color: "#fff", fontFamily: "'Bebas Neue', sans-serif", fontSize: 22,
-                    cursor: "pointer", transition: "all 120ms",
-                  }}>€{a}</button>
+                {amounts.map((a, i) => (
+                  <button 
+                    key={a} 
+                    ref={i === 0 ? firstButtonRef : null}
+                    onClick={() => { setAmt(a); setCustom(""); }} 
+                    style={{
+                      padding: "12px 0", borderRadius: 4,
+                      background: (custom === "" && amt === a) ? "var(--accent)" : "rgba(255,255,255,0.06)",
+                      border: "1px solid " + ((custom === "" && amt === a) ? "var(--accent)" : "rgba(255,255,255,0.1)"),
+                      color: "#fff", fontFamily: "'Bebas Neue', sans-serif", fontSize: 22,
+                      cursor: "pointer", transition: "all 120ms",
+                    }}
+                  >€{a}</button>
                 ))}
               </div>
 
               {/* Custom amount */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
                 <div style={{ flex: 1, display: "flex", alignItems: "center", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 4, background: "rgba(255,255,255,0.04)", padding: "0 12px", height: 44 }}>
-                  <span style={{ color: "#555", fontSize: 16, marginRight: 6 }}>€</span>
-                  <input type="number" min="1" max="500" placeholder="Other amount"
+                  <span style={{ color: "#555", fontSize: 16, marginRight: 6 }} aria-hidden="true">€</span>
+                  <input type="number" min="1" max="500" placeholder="Other amount" aria-label="Custom tip amount"
                     value={custom} onChange={e => setCustom(e.target.value)}
                     style={{ flex: 1, background: "none", border: "none", outline: "none", color: "#fff", fontFamily: "'Bebas Neue', sans-serif", fontSize: 20 }} />
                 </div>

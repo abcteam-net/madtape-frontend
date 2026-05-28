@@ -4,6 +4,23 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Madtape AI — The Home of Short-Form AI Cinema</title>
+<meta name="description" content="Discover, stream, and generate cinematic short-form AI films. The premier global hub for emerging AI filmmakers, cinematic challenges, and latent space explorations." />
+<link rel="canonical" href="https://madtape.com" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎬</text></svg>" />
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://madtape.com" />
+<meta property="og:title" content="Madtape AI — The Home of Short-Form AI Cinema" />
+<meta property="og:description" content="Discover, stream, and generate cinematic short-form AI films. Join the global AI filmmaker revolution today." />
+<meta property="og:image" content="https://madtape.com/uploads/panel%201-b5d859a2.png" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:url" content="https://madtape.com" />
+<meta name="twitter:title" content="Madtape AI — The Home of Short-Form AI Cinema" />
+<meta name="twitter:description" content="Discover, stream, and generate cinematic short-form AI films. Join the global AI filmmaker revolution today." />
+<meta name="twitter:image" content="https://madtape.com/uploads/panel%201-b5d859a2.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bebas+Neue&display=swap" rel="stylesheet">
@@ -78,10 +95,25 @@ button:focus-visible, a:focus-visible {
 
 /* Prevent layout shift from scrollbar appearing */
 html { overflow-y: scroll; }
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 20px;
+  background: var(--accent);
+  color: #fff;
+  padding: 10px 20px;
+  z-index: 9999;
+  transition: top 0.2s ease;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 4px 4px;
+}
+.skip-link:focus {
+  top: 0;
+}
 </style>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
 
 <!-- Firebase SDK compat libraries -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -114,17 +146,6 @@ html { overflow-y: scroll; }
 </head>
 <body>
 <div id="root"></div>
-<script type="text/babel" src="platform-data.jsx"></script>
-<script type="text/babel" src="platform-cards.jsx"></script>
-<script type="text/babel" src="platform-nav.jsx"></script>
-<script type="text/babel" src="page-home.jsx"></script>
-<script type="text/babel" src="page-explore.jsx"></script>
-<script type="text/babel" src="page-challenges.jsx"></script>
-<script type="text/babel" src="page-creator-tools.jsx"></script>
-<script type="text/babel" src="page-profile-video.jsx"></script>
-<script type="text/babel" src="page-trailers.jsx"></script>
-<script type="text/babel" src="real-ai-films.jsx?v=3"></script>
-<script type="text/babel" src="page-real-films.jsx"></script>
-<script type="text/babel" src="platform-app.jsx"></script>
+<script type="module" src="/src/main.jsx"></script>
 </body>
 </html>

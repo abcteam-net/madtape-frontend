@@ -1,9 +1,15 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { CreatorCard, VideoGrid, fmtNum, shadeHex } from './platform-cards.jsx';
+import { PlatformFooter } from './platform-nav.jsx';
 // Madtape AI — Creator Profile + Video Detail + Leaderboard + Creators directory
 
 const { useState: usePV } = React;
 
 // ── CREATOR PROFILE ───────────────────────────────────────────────────────────
-function ProfilePage({ creatorId, onNav }) {
+export function ProfilePage() {
+  const navigate = useNavigate();
+  const { creatorId = "kira-motion" } = useParams();
   const [tab, setTab] = usePV("films");
   const creator = (window.CREATORS || []).find(c => c.id === creatorId) || window.CREATORS[0];
   const films = (window.VIDEOS || []).filter(v => v.creator === creator.id);
@@ -62,7 +68,7 @@ function ProfilePage({ creatorId, onNav }) {
 
       <div style={{ padding: "36px 56px 80px" }}>
         {tab === "films" && (
-          films.length ? <VideoGrid videos={films} onOpen={(id) => onNav("video:" + id)} cols={4} /> : <div style={{ color: "#555", fontSize: 15 }}>No films published yet.</div>
+          films.length ? <VideoGrid videos={films} onOpen={(id) => navigate("/video/" + id)} cols={4} /> : <div style={{ color: "#555", fontSize: 15 }}>No films published yet.</div>
         )}
         {tab === "badges" && (
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
@@ -94,12 +100,20 @@ function ProfilePage({ creatorId, onNav }) {
 }
 
 // ── VIDEO DETAIL ──────────────────────────────────────────────────────────────
-function VideoDetailPage({ videoId, onNav }) {
+export function VideoDetailPage() {
+  const navigate = useNavigate();
+  const { videoId } = useParams();
   const [liked, setLiked] = usePV(false);
   const [showTip, setShowTip] = usePV(false);
+  const [playing, setPlaying] = usePV(false);
+  
   const video = (window.VIDEOS || []).find(v => v.id === videoId) || window.VIDEOS[0];
   const creator = (window.CREATORS || []).find(c => c.id === video.creator);
   const related = (window.VIDEOS || []).filter(v => v.id !== video.id && v.category === video.category).slice(0, 4);
+
+  React.useEffect(() => {
+    setPlaying(false);
+  }, [videoId]);
 
   return (
     <div style={{ paddingTop: 80, minHeight: "100vh" }}>
@@ -108,26 +122,38 @@ function VideoDetailPage({ videoId, onNav }) {
         <div style={{ borderRight: "1px solid rgba(255,255,255,0.08)" }}>
           {/* Player */}
           <div style={{ aspectRatio: "21/9", position: "relative", background: "#0a0a0a", overflow: "hidden" }}>
-            {video.panel && <img src={video.panel} alt={video.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />}
-            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%)" }} />
-            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
-            {/* Play button */}
-            <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 22, paddingLeft: 5, background: "rgba(0,0,0,0.3)", cursor: "pointer" }}>▶</div>
-            {/* HUD */}
-            <div style={{ position: "absolute", top: 14, right: 16, fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} />{video.duration} · {video.model.split(" ")[0]}
-            </div>
-            {video.challengeTag && <div style={{ position: "absolute", top: 14, left: 14, background: "var(--accent)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 2, letterSpacing: "0.1em" }}>{video.challengeTag}</div>}
-            {/* Controls */}
-            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 18px", background: "linear-gradient(0deg, rgba(0,0,0,0.7), transparent)", display: "flex", alignItems: "center", gap: 12, fontSize: 11, color: "rgba(255,255,255,0.8)" }}>
-              <span>▶</span>
-              <div style={{ flex: 1, height: 2, background: "rgba(255,255,255,0.25)", borderRadius: 1, position: "relative" }}>
-                <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "22%", background: "var(--accent)", borderRadius: 1 }} />
-              </div>
-              <span>{video.duration}</span>
-              <span>HD</span>
-              <span>⛶</span>
-            </div>
+            {playing && (video.youtubeId || video.id) ? (
+              <iframe
+                src={`https://www.youtube.com/embed/${video.youtubeId || "B-lfTmZp1DE"}?autoplay=1&modestbranding=1&rel=0`}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={video.title}
+              />
+            ) : (
+              <>
+                {video.panel && <img src={video.panel} alt={video.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />}
+                <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%)" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
+                {/* Play button */}
+                <div onClick={() => setPlaying(true)} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 22, paddingLeft: 5, background: "rgba(0,0,0,0.3)", cursor: "pointer", zIndex: 10 }}>▶</div>
+                {/* HUD */}
+                <div style={{ position: "absolute", top: 14, right: 16, fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} />{video.duration} · {video.model.split(" ")[0]}
+                </div>
+                {video.challengeTag && <div style={{ position: "absolute", top: 14, left: 14, background: "var(--accent)", color: "#fff", fontSize: 9, fontWeight: 700, padding: "3px 8px", borderRadius: 2, letterSpacing: "0.1em" }}>{video.challengeTag}</div>}
+                {/* Controls */}
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "12px 18px", background: "linear-gradient(0deg, rgba(0,0,0,0.7), transparent)", display: "flex", alignItems: "center", gap: 12, fontSize: 11, color: "rgba(255,255,255,0.8)" }}>
+                  <span>▶</span>
+                  <div style={{ flex: 1, height: 2, background: "rgba(255,255,255,0.25)", borderRadius: 1, position: "relative" }}>
+                    <div style={{ position: "absolute", left: 0, top: 0, height: "100%", width: "22%", background: "var(--accent)", borderRadius: 1 }} />
+                  </div>
+                  <span>{video.duration}</span>
+                  <span>HD</span>
+                  <span>⛶</span>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Title + actions */}
@@ -151,7 +177,7 @@ function VideoDetailPage({ videoId, onNav }) {
             {/* Creator row */}
             {creator && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ display: "flex", gap: 14, alignItems: "center", cursor: "pointer" }} onClick={() => onNav("profile:" + creator.id)}>
+                <div style={{ display: "flex", gap: 14, alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/profile/" + creator.id)}>
                   <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: "#fff" }}>{creator.name[0]}</div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{creator.name}</div>
@@ -178,7 +204,7 @@ function VideoDetailPage({ videoId, onNav }) {
           {related.length > 0 && (
             <div style={{ padding: "28px 32px 60px" }}>
               <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20 }}>More like this</h3>
-              <VideoGrid videos={related} onOpen={(id) => onNav("video:" + id)} cols={2} />
+              <VideoGrid videos={related} onOpen={(id) => navigate("/video/" + id)} cols={2} />
             </div>
           )}
         </div>
@@ -187,7 +213,7 @@ function VideoDetailPage({ videoId, onNav }) {
         <div style={{ padding: "20px 18px", overflowY: "auto" }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: "#777", marginBottom: 14, letterSpacing: "0.1em", textTransform: "uppercase" }}>Up Next</div>
           {(window.VIDEOS || []).filter(v => v.id !== video.id).slice(0, 8).map(v => (
-            <div key={v.id} onClick={() => onNav("video:" + v.id)} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer" }}>
+            <div key={v.id} onClick={() => navigate("/video/" + v.id)} style={{ display: "flex", gap: 10, padding: "8px 0", borderBottom: "1px solid rgba(255,255,255,0.05)", cursor: "pointer" }}>
               <div style={{ width: 100, aspectRatio: "16/9", borderRadius: 3, flexShrink: 0, overflow: "hidden", background: "#111", position: "relative" }}>
                 {v.panel && <img src={v.panel} alt={v.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />}
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.6))" }} />
@@ -207,7 +233,8 @@ function VideoDetailPage({ videoId, onNav }) {
 }
 
 // ── CREATORS DIRECTORY ────────────────────────────────────────────────────────
-function CreatorsPage({ onNav }) {
+export function CreatorsPage({ }) {
+  const navigate = useNavigate();
   const creators = window.CREATORS || [];
   return (
     <div style={{ paddingTop: 80 }}>
@@ -216,16 +243,17 @@ function CreatorsPage({ onNav }) {
         <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 72, lineHeight: 0.88, marginBottom: 16, letterSpacing: "0.005em" }}>AI Filmmakers.</h1>
         <p style={{ fontSize: 16, color: "#b3b3b3", maxWidth: "50ch", marginBottom: 40 }}>Discover the creators building their identity on Madtape. Every profile shows their best work, challenge history, and generation tools.</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-          {creators.map(c => <CreatorCard key={c.id} creator={c} onOpen={() => onNav("profile:" + c.id)} />)}
+          {creators.map(c => <CreatorCard key={c.id} creator={c} onOpen={() => navigate("/profile/" + c.id)} />)}
         </div>
       </div>
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }
 
 // ── LEADERBOARD ───────────────────────────────────────────────────────────────
-function LeaderboardPage({ onNav }) {
+export function LeaderboardPage({ }) {
+  const navigate = useNavigate();
   const [filter, setFilter] = usePV("weekly");
   const board = window.LEADERBOARD || [];
   const videos = window.VIDEOS || [];
@@ -249,7 +277,7 @@ function LeaderboardPage({ onNav }) {
           const c = v && (window.CREATORS || []).find(x => x.id === v.creator);
           if (!v) return null;
           return (
-            <div key={i} onClick={() => onNav("video:" + v.id)} style={{
+            <div key={i} onClick={() => navigate("/video/" + v.id)} style={{
               display: "grid", gridTemplateColumns: "48px 1fr 120px 100px 100px 80px",
               gap: 16, padding: "14px 16px", borderBottom: "1px solid rgba(255,255,255,0.06)",
               alignItems: "center", cursor: "pointer",
@@ -282,7 +310,7 @@ function LeaderboardPage({ onNav }) {
           Scores are calculated from views + weighted likes + editor boost. Updated every hour. Challenge jury scores count separately.
         </div>
       </div>
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }

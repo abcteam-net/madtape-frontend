@@ -1,3 +1,6 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { VideoGrid, fmtNum } from './platform-cards.jsx';
 // Madtape AI — Explore feed page
 
 const { useState: useEx, useMemo: useMemoEx } = React;
@@ -5,7 +8,8 @@ const { useState: useEx, useMemo: useMemoEx } = React;
 const GENRES = ["Featured","Latest","Trending","Challenges","Staff Picks","Sci-Fi","Horror","Fantasy","Fashion","Music Video","Experimental","Storytelling","Documentary","Animation","Action","Drama"];
 const SORTS = ["Most Viewed","Most Liked","Newest","Challenge Winners","Editor's Picks"];
 
-function ExplorePage({ onNav }) {
+export function ExplorePage({ }) {
+  const navigate = useNavigate();
   const [genre, setGenre] = useEx("Featured");
   const [sort, setSort] = useEx("Most Viewed");
 
@@ -65,7 +69,7 @@ function ExplorePage({ onNav }) {
           <>
             {/* Hero film */}
             {videos[0] && (
-              <div onClick={() => onNav("video:" + videos[0].id)} style={{
+              <div onClick={() => navigate("/video/" + videos[0].id)} style={{
                 display: "grid", gridTemplateColumns: "3fr 1fr", gap: 24,
                 marginTop: 32, marginBottom: 40, cursor: "pointer",
               }}>
@@ -86,7 +90,7 @@ function ExplorePage({ onNav }) {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {videos.slice(1, 4).map(v => (
-                    <div key={v.id} onClick={(e) => { e.stopPropagation(); onNav("video:" + v.id); }} style={{ display: "flex", gap: 10, alignItems: "center", background: "rgba(255,255,255,0.04)", borderRadius: 4, padding: 8 }}>
+                    <div key={v.id} onClick={(e) => { e.stopPropagation(); navigate("/video/" + v.id); }} style={{ display: "flex", gap: 10, alignItems: "center", background: "rgba(255,255,255,0.04)", borderRadius: 4, padding: 8 }}>
                       <div style={{ width: 80, aspectRatio: "16/9", borderRadius: 3, overflow: "hidden", flexShrink: 0, background: "#111", position: "relative" }}>
                         {v.panel && <img src={v.panel} alt={v.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center" }} />}
                       </div>
@@ -99,11 +103,11 @@ function ExplorePage({ onNav }) {
                 </div>
               </div>
             )}
-            <VideoGrid videos={videos.slice(1)} onOpen={(id) => onNav("video:" + id)} cols={4} />
+            <VideoGrid videos={videos.slice(1)} onOpen={(id) => navigate("/video/" + id)} cols={4} />
           </>
         ) : (
           <div style={{ marginTop: 32 }}>
-            <VideoGrid videos={videos} onOpen={(id) => onNav("video:" + id)} cols={4} />
+            <VideoGrid videos={videos} onOpen={(id) => navigate("/video/" + id)} cols={4} />
           </div>
         )}
       </div>

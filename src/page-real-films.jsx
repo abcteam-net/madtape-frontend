@@ -1,6 +1,10 @@
+import React from 'react';
+import { useNavigate, useParams, Link, useLocation } from 'react-router-dom';
+import { PlatformFooter } from './platform-nav.jsx';
 // Madtape AI — Real AI Cinema page
 
-function RealAIFilmsPage({ onNav }) {
+export function RealAIFilmsPage({ }) {
+  const navigate = useNavigate();
   const films = window.REAL_AI_FILMS || [];
   const featured = films.filter(f => f.featured);
   const all = films;
@@ -89,7 +93,7 @@ function RealAIFilmsPage({ onNav }) {
         To submit a real AI film to this index, use the Upload page.
       </div>
 
-      <PlatformFooter onNav={onNav} />
+      <PlatformFooter />
     </div>
   );
 }
