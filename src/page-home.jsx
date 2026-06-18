@@ -71,7 +71,7 @@ export function HomePage({ user, onLogin }) {
             }}>This Week's Challenge →</button>
           </div>
           <div style={{ display: "flex", gap: 32, marginTop: 48, paddingTop: 32, borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-            {[["16K+","Films uploaded"],["3.2K","Emerging creators"],["48+","Countries"],["4","AI models"]].map(([v, l]) => (
+            {[["Early Access","Platform Launch"],["Beta Phase","Creator Tools"],["Weekly","AI Film Challenges"],["Global","Submissions Open"]].map(([v, l]) => (
               <div key={l}>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, lineHeight: 1, color: "#fff" }}>{v}</div>
                 <div style={{ fontSize: 11, color: "#777", marginTop: 4, letterSpacing: "0.08em", textTransform: "uppercase" }}>{l}</div>
@@ -158,12 +158,14 @@ export function HomePage({ user, onLogin }) {
       <section style={{ padding: "60px 56px 80px", borderTop: "1px solid rgba(255,255,255,0.07)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0, border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, overflow: "hidden" }}>
           {[
-            { icon: "🎓", title: "Film Students", body: "Madtape is built for students in film, media, and creative technology programs. Publish your thesis film, short, or experiment — and build a real professional portfolio.", cta: "Submit your student film" },
-            { icon: "🌍", title: "Cultural Exchange", body: "We believe cinema is a universal language. Madtape connects filmmakers across 48+ countries, creating a living archive of global AI-assisted creative expression.", cta: "Join the community" },
-            { icon: "⭐", title: "Emerging Talent", body: "Every week, Madtape editors spotlight breakthrough work. If you're early in your filmmaking career, this is the stage — your first film could be the one that gets you discovered.", cta: "See this week's picks" },
+            { icon: "/icons/students.svg", title: "Film Students", body: "Madtape is built for students in film, media, and creative technology programs. Publish your thesis film, short, or experiment — and build a real professional portfolio.", cta: "Submit your student film" },
+            { icon: "/icons/Cultural Exchange.svg", title: "Cultural Exchange", body: "We believe cinema is a universal language. Madtape connects filmmakers globally, creating a living archive of AI-assisted creative expression.", cta: "Join the community" },
+            { icon: "/icons/Talent.svg", title: "Emerging Talent", body: "Every week, Madtape editors spotlight breakthrough work. If you're early in your filmmaking career, this is the stage — your first film could be the one that gets you discovered.", cta: "See this week's picks" },
           ].map((item, i) => (
             <div key={item.title} style={{ padding: "36px 32px", borderRight: i < 2 ? "1px solid rgba(255,255,255,0.08)" : "none", background: "rgba(255,255,255,0.02)" }}>
-              <div style={{ fontSize: 32, marginBottom: 18 }}>{item.icon}</div>
+              <div style={{ marginBottom: 18 }}>
+                <img src={item.icon} alt="" style={{ height: 36, display: "block" }} />
+              </div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 30, lineHeight: 1, marginBottom: 12, letterSpacing: "0.005em" }}>{item.title}</div>
               <p style={{ fontSize: 14, color: "#b3b3b3", lineHeight: 1.6, marginBottom: 20 }}>{item.body}</p>
               <a href="#" onClick={(e) => { e.preventDefault(); navigate("/explore"); }} style={{ fontSize: 12, color: "var(--accent)", letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 700 }}>{item.cta} →</a>

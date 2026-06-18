@@ -84,13 +84,15 @@ export function PlatformNav({ user, onLogin, onLogout }) {
       }}
     >
       <div
-        style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "var(--accent)", cursor: "pointer", letterSpacing: "0.02em", flexShrink: 0 }}
+        style={{ cursor: "pointer", flexShrink: 0 }}
         onClick={() => navigate("/")}
         role="link"
         tabIndex={0}
         aria-label="Madtape Home"
         onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate("/"); }}
-      >MADTAPE</div>
+      >
+        <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 28, display: "block" }} />
+      </div>
       <div style={{ display: "flex", gap: 4 }}>
         {links.map(([key, label]) => (
           <button 
@@ -177,8 +179,10 @@ export function PlatformNav({ user, onLogin, onLogout }) {
                             <div style={{
                               width: 24, height: 24, borderRadius: "50%", background: c.color,
                               display: "flex", alignItems: "center", justifyContent: "center",
-                              fontFamily: "'Bebas Neue', sans-serif", fontSize: 12, color: "#fff"
-                            }}>{c.name[0]}</div>
+                              overflow: "hidden"
+                            }}>
+                              <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            </div>
                             <div style={{ minWidth: 0 }}>
                               <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{c.name}</div>
                               <div style={{ fontSize: 11, color: "#555" }}>{c.handle}</div>
@@ -248,7 +252,7 @@ export function PlatformNav({ user, onLogin, onLogout }) {
               width: 34, height: 34, borderRadius: 4,
               background: "linear-gradient(135deg, #e50914, #8b0000)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontWeight: 700, fontSize: 14, cursor: "pointer",
+              cursor: "pointer", overflow: "hidden",
             }} 
             onClick={() => navigate("/dashboard")} 
             role="link"
@@ -256,7 +260,9 @@ export function PlatformNav({ user, onLogin, onLogout }) {
             aria-label="Dashboard"
             onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate("/dashboard"); }}
             title="Dashboard"
-          >{user.name[0].toUpperCase()}</div>
+          >
+            <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
         ) : (
           <button onClick={onLogin} aria-label="Sign In" style={{
             background: "var(--accent)", color: "#fff", padding: "7px 18px",
@@ -276,7 +282,9 @@ export function PlatformFooter() {
     <footer style={{ padding: "60px 56px 40px", borderTop: "1px solid rgba(255,255,255,0.07)", background: "#0a0a0a" }}>
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
         <div>
-          <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 42, color: "var(--accent)", marginBottom: 12 }}>MADTAPE</div>
+          <div style={{ marginBottom: 12, cursor: "pointer" }} onClick={() => navigate("/")}>
+            <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 42, display: "block" }} />
+          </div>
           <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, maxWidth: "28ch" }}>
             An innovative streaming platform transforming film & media production. Dedicated to promoting film students and emerging talent worldwide.
           </p>

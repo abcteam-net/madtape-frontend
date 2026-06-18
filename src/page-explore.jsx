@@ -86,7 +86,9 @@ export function ExplorePage({ }) {
                       <span>·</span><span>♥ {fmtNum(videos[0].likes)}</span>
                     </div>
                   </div>
-                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 56, height: 56, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 20, paddingLeft: 4 }}>▶</div>
+                  <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 56, height: 56, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)" }}>
+                    <img src="/icons/play%20ai%20film.svg" alt="Play" style={{ width: 24, height: 24 }} />
+                  </div>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {videos.slice(1, 4).map(v => (

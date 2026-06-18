@@ -93,8 +93,9 @@ export function VideoCard({ video, onOpen, size = "md" }) {
               border: "2px solid rgba(255,255,255,0.9)",
               background: "rgba(0,0,0,0.4)",
               display: "flex", alignItems: "center", justifyContent: "center",
-              color: "#fff", fontSize: 16, paddingLeft: 3,
-            }}>▶</div>
+            }}>
+              <img src="/icons/play%20ai%20film.svg" alt="Play" style={{ width: 20, height: 20 }} />
+            </div>
           </div>
         )}
       </div>
@@ -219,9 +220,10 @@ export function CreatorCard({ creator, onOpen }) {
         width: 60, height: 60, borderRadius: "50%", margin: "0 auto 12px",
         background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 22, fontWeight: 700, color: "#fff",
-        fontFamily: "'Bebas Neue', sans-serif",
-      }}>{creator.name[0]}</div>
+        overflow: "hidden",
+      }}>
+        <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+      </div>
       <div style={{ fontWeight: 700, fontSize: 15, color: "#fff", marginBottom: 2 }}>{creator.name}</div>
       <div style={{ fontSize: 12, color: "#777", marginBottom: 10 }}>{creator.handle}</div>
       <div style={{ display: "flex", justifyContent: "center", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>

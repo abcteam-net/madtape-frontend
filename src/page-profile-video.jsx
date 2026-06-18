@@ -30,9 +30,10 @@ export function ProfilePage() {
               width: 96, height: 96, borderRadius: 8, flexShrink: 0,
               background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -50)})`,
               display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, color: "#fff",
-              border: "3px solid #0a0a0a",
-            }}>{creator.name[0]}</div>
+              border: "3px solid #0a0a0a", overflow: "hidden",
+            }}>
+              <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            </div>
             <div style={{ paddingBottom: 4 }}>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, lineHeight: 0.9, marginBottom: 4 }}>{creator.name}</div>
               <div style={{ fontSize: 14, color: "#777", marginBottom: 8 }}>{creator.handle} {creator.location && `· ${creator.location}`}</div>
@@ -136,7 +137,9 @@ export function VideoDetailPage() {
                 <div style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.55) 100%)" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
                 {/* Play button */}
-                <div onClick={() => setPlaying(true)} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 22, paddingLeft: 5, background: "rgba(0,0,0,0.3)", cursor: "pointer", zIndex: 10 }}>▶</div>
+                <div onClick={() => setPlaying(true)} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 72, height: 72, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.9)", display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.3)", cursor: "pointer", zIndex: 10 }}>
+                  <img src="/icons/play%20ai%20film.svg" alt="Play" style={{ width: 32, height: 32 }} />
+                </div>
                 {/* HUD */}
                 <div style={{ position: "absolute", top: 14, right: 16, fontSize: 10, letterSpacing: "0.14em", color: "rgba(255,255,255,0.8)", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--accent)", display: "inline-block" }} />{video.duration} · {video.model.split(" ")[0]}
@@ -178,7 +181,9 @@ export function VideoDetailPage() {
             {creator && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                 <div style={{ display: "flex", gap: 14, alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/profile/" + creator.id)}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Bebas Neue',sans-serif", fontSize: 18, color: "#fff" }}>{creator.name[0]}</div>
+                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  </div>
                   <div>
                     <div style={{ fontWeight: 700, fontSize: 15 }}>{creator.name}</div>
                     <div style={{ fontSize: 12, color: "#777" }}>{creator.handle} · {fmtNum(creator.views)} views</div>
