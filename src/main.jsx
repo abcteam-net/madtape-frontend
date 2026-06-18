@@ -13,6 +13,17 @@ import { VideoCard, CreatorCard, ChallengeCard } from './platform-cards.jsx';
 import { CREATORS, VIDEOS, CHALLENGES, LEADERBOARD, PLATFORM_PLANS } from './platform-data.jsx';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
+import { auth, db } from './firebase-config.js';
+import { 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  signInWithPopup, 
+  GoogleAuthProvider, 
+  signOut, 
+  onAuthStateChanged,
+  updateProfile
+} from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 // Madtape AI — main app router
 
 const { useState: useApp, useEffect: useAppFX } = React;
@@ -90,15 +101,15 @@ function LoginModal({ onClose, onLogin }) {
     try {
       if (isRegister) {
         // Sign Up
-        const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const fbUser = userCredential.user;
         if (name) {
-          await fbUser.updateProfile({ displayName: name });
+          await updateProfile(fbUser, { displayName: name });
         }
         // State listener in PlatformApp will automatically update state and close modal
       } else {
         // Sign In
-        await firebase.auth().signInWithEmailAndPassword(email, password);
+        await signInWithEmailAndPassword(auth, email, password);
         // State listener in PlatformApp will automatically update state and close modal
       }
     } catch (err) {
@@ -125,8 +136,8 @@ function LoginModal({ onClose, onLogin }) {
     setLoading(true);
     setError(null);
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      await firebase.auth().signInWithPopup(provider);
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
       // State listener in PlatformApp will automatically update state and close modal
     } catch (err) {
       console.error(err);
@@ -454,34 +465,62 @@ function PlatformApp() {
     if (updated) {
       window.__madtapeUser = updated;
       localStorage.setItem("__madtape_user", JSON.stringify(updated));
-      localStorage.setItem(`__madtape_plan_${updated.uid}`, updated.plan);
-      localStorage.setItem(`__madtape_balance_${updated.uid}`, String(updated.balance));
     } else {
       window.__madtapeUser = null;
       localStorage.removeItem("__madtape_user");
     }
   };
 
-  // Real Firebase Auth state synchronization
+  // Real Firebase Auth state synchronization with Firestore fallback
   useAppFX(() => {
     if (window.isFirebaseConfigured) {
-      const unsubscribe = firebase.auth().onAuthStateChanged((fbUser) => {
+      const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
         if (fbUser) {
           const uid = fbUser.uid;
-          const savedPlan = localStorage.getItem(`__madtape_plan_${uid}`) || "free";
-          const savedBalance = localStorage.getItem(`__madtape_balance_${uid}`) || "0";
-          const u = {
-            uid: uid,
-            name: fbUser.displayName || fbUser.email.split("@")[0] || "creator",
-            email: fbUser.email,
-            photoURL: fbUser.photoURL,
-            balance: parseInt(savedBalance),
-            plan: savedPlan
-          };
-          setUser(u);
-          window.__madtapeUser = u;
-          localStorage.setItem("__madtape_user", JSON.stringify(u));
-          setShowLogin(false);
+          const userRef = doc(db, "users", uid);
+          try {
+            const docSnap = await getDoc(userRef);
+            let userData = {
+              uid: uid,
+              name: fbUser.displayName || fbUser.email.split("@")[0] || "creator",
+              email: fbUser.email,
+              photoURL: fbUser.photoURL,
+              plan: "free"
+            };
+            if (docSnap.exists()) {
+              userData = { ...userData, ...docSnap.data() };
+            } else {
+              const defaultData = {
+                uid: uid,
+                email: fbUser.email,
+                displayName: userData.name,
+                plan: "free",
+                stripeCustomerId: null,
+                stripeConnectAccountId: null,
+                createdAt: new Date(),
+                updatedAt: new Date()
+              };
+              await setDoc(userRef, defaultData);
+              userData = { ...userData, ...defaultData };
+            }
+            setUser(userData);
+            window.__madtapeUser = userData;
+            localStorage.setItem("__madtape_user", JSON.stringify(userData));
+            setShowLogin(false);
+          } catch (err) {
+            console.error("Firestore user fetch error:", err);
+            const u = {
+              uid: uid,
+              name: fbUser.displayName || fbUser.email.split("@")[0] || "creator",
+              email: fbUser.email,
+              photoURL: fbUser.photoURL,
+              plan: "free"
+            };
+            setUser(u);
+            window.__madtapeUser = u;
+            localStorage.setItem("__madtape_user", JSON.stringify(u));
+            setShowLogin(false);
+          }
         } else {
           setUser(null);
           window.__madtapeUser = null;
@@ -495,20 +534,17 @@ function PlatformApp() {
   const login = () => setShowLogin(true);
   const handleLogin = (u) => {
     const uid = u.uid || "demo-user";
-    const savedPlan = localStorage.getItem(`__madtape_plan_${uid}`) || "free";
-    const savedBalance = localStorage.getItem(`__madtape_balance_${uid}`) || "0";
     const updatedUser = {
       ...u,
       uid,
-      plan: savedPlan,
-      balance: parseInt(savedBalance)
+      plan: u.plan || "free"
     };
     handleSetUser(updatedUser);
     setShowLogin(false);
   };
   const logout = () => {
     if (window.isFirebaseConfigured) {
-      firebase.auth().signOut().then(() => {
+      signOut(auth).then(() => {
         handleSetUser(null);
       }).catch(err => {
         console.error("Firebase logout failed:", err);

@@ -169,30 +169,38 @@ export function VideoDetailPage() {
                 <span>· {video.category}</span>
               </div>
               <div style={{ display: "flex", gap: 8 }}>
-                {[["♥", liked ? "var(--accent)" : "#fff", () => setLiked(l => !l)],["＋ Save","#fff",null],["↗ Share","#fff",null]].map(([l, c, fn]) => (
+                {[
+                  ["♥", liked ? "var(--accent)" : "#fff", () => setLiked(l => !l)],
+                  ["💛 Tip", "#fff", () => setShowTip(true)],
+                  ["＋ Save", "#fff", null],
+                  ["↗ Share", "#fff", null]
+                ].map(([l, c, fn]) => (
                   <button key={l} onClick={fn} style={{ background: "rgba(255,255,255,0.08)", border: "none", color: c, padding: "7px 14px", borderRadius: 4, fontSize: 13, cursor: "pointer", fontWeight: l.startsWith("♥") && liked ? 700 : 400 }}>
-                    {l} {l === "♥" && fmtNum(video.likes + (liked ? 1 : 0))}
+                    {l === "♥" ? `♥ ${fmtNum(video.likes + (liked ? 1 : 0))}` : l}
                   </button>
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Creator row */}
-            {creator && (
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ display: "flex", gap: 14, alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/profile/" + creator.id)}>
-                  <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 15 }}>{creator.name}</div>
-                    <div style={{ fontSize: 12, color: "#777" }}>{creator.handle} · {fmtNum(creator.views)} views</div>
-                  </div>
+          {/* Creator row */}
+          {creator && (
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 32px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "center", cursor: "pointer" }} onClick={() => navigate("/profile/" + creator.id)}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", background: `linear-gradient(135deg, ${creator.color}, ${shadeHex(creator.color, -40)})`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                  <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                 </div>
-                <button style={{ background: "rgba(255,255,255,0.08)", color: "#fff", padding: "8px 18px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "none", cursor: "pointer" }}>+ Follow</button>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{creator.name}</div>
+                  <div style={{ fontSize: 12, color: "#777" }}>{creator.handle} · {fmtNum(creator.views)} views</div>
+                </div>
               </div>
-            )}
+              <button style={{ background: "rgba(255,255,255,0.08)", color: "#fff", padding: "8px 18px", fontSize: 13, fontWeight: 600, borderRadius: 4, border: "none", cursor: "pointer" }}>+ Follow</button>
+            </div>
+          )}
 
+          {/* Prompt + Workflow Details */}
+          <div style={{ padding: "0 32px" }}>
             {/* Prompt block */}
             <div style={{ padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 14, fontWeight: 600 }}>Prompt / Creation Notes</div>
@@ -201,6 +209,33 @@ export function VideoDetailPage() {
                 <span>Model: <b style={{ color: "#fff" }}>{video.model}</b></span>
                 <span>· Duration: <b style={{ color: "#fff" }}>{video.duration}</b></span>
                 <span>· Category: <b style={{ color: "#fff" }}>{video.category}</b></span>
+              </div>
+            </div>
+
+            {/* Workflow block */}
+            <div style={{ padding: "24px 0", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 14, fontWeight: 600 }}>Cinematic Workflow</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                {(video.workflow?.tools || ["Midjourney v6", video.model.split(" ")[0] || "Seedance", "Adobe Premiere Pro", "ElevenLabs"]).map(tool => (
+                  <span key={tool} style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "4px 8px", fontSize: 11, color: "#aaa" }}>{tool}</span>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                {(video.workflow?.steps || [
+                  "Generated keyframe concept prompts in Midjourney v6",
+                  `Used ${video.model} to extrapolate and animate keyframes into a 5-second cinematic video`,
+                  "Generated ambient sound effects and voiceovers in ElevenLabs",
+                  "Edited clips, color graded to cinematic style, and mastered foley audio in Premiere Pro"
+                ]).map((step, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: 10, fontSize: 13, color: "#b3b3b3", lineHeight: 1.5 }}>
+                    <span style={{ color: "var(--accent)", fontWeight: 700 }}>{idx + 1}.</span>
+                    <span>{step}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 20, fontSize: 12, color: "#777" }}>
+                <span>Production Time: <b style={{ color: "#fff" }}>{video.workflow?.totalTime || "5 hours"}</b></span>
+                <span>· Est. Cost: <b style={{ color: "#fff" }}>${(video.workflow?.totalCost || 1.80).toFixed(2)} USD</b></span>
               </div>
             </div>
           </div>
@@ -233,6 +268,44 @@ export function VideoDetailPage() {
           ))}
         </div>
       </div>
+
+      {/* Tipping Modal */}
+      {showTip && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(6px)" }}>
+          <div style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8, padding: "32px 28px", width: 420, maxWidth: "92vw", position: "relative" }}>
+            <button 
+              onClick={() => setShowTip(false)} 
+              style={{ position: "absolute", top: 16, right: 18, background: "none", border: "none", color: "#555", fontSize: 20, cursor: "pointer" }}
+            >
+              ✕
+            </button>
+            <div style={{ color: "var(--accent)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Support the Creator</div>
+            <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, marginBottom: 8 }}>Donate to {creator?.name || "Creator"}</h3>
+            <p style={{ color: "#b3b3b3", fontSize: 12, lineHeight: 1.5, marginBottom: 20 }}>
+              All donations (minus a flat 5% platform hosting fee) are processed securely and sent directly to the creator's account to fund their next cinematic AI film project.
+            </p>
+            
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
+              {["$5", "$10", "$25"].map(amt => (
+                <button 
+                  key={amt} 
+                  onClick={() => alert("Payments are coming soon. Real Stripe Checkout donations are disabled during this beta preview. No money is deducted.")}
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "10px", color: "#fff", fontWeight: 700, cursor: "pointer" }}
+                >
+                  {amt}
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={() => setShowTip(false)}
+              style={{ width: "100%", background: "var(--accent)", color: "#fff", padding: "12px", borderRadius: 4, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

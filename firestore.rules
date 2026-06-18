@@ -1,0 +1,41 @@
+rules_version = "2";
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /films/{filmId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.creatorId;
+
+      allow update, delete: if request.auth != null
+        && request.auth.uid == resource.data.creatorId;
+    }
+
+    match /donations/{donationId} {
+      allow create: if false; // Only written from trusted backend/webhook integrations
+      allow read: if request.auth != null
+        && (
+          request.auth.uid == resource.data.donorId ||
+          request.auth.uid == resource.data.creatorId
+        );
+    }
+
+    match /challenges/{challengeId} {
+      allow read: if true;
+      allow write: if false; // Challenges are admin-only and managed off-client
+    }
+
+    match /submissions/{submissionId} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && request.auth.uid == request.resource.data.creatorId;
+    }
+  }
+}

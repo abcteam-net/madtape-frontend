@@ -143,135 +143,111 @@ export const LEADERBOARD = [
   { rank:10, videoId:"the-silent-city", score:4820, editor:2 },
 ];
 
+export const STRIPE_ENABLED = false;
+
 export const PLATFORM_PLANS = [
   {
-    id: "basic",
-    name: "Creator Basic",
-    price: 250,
+    id: "free",
+    name: "Free",
+    price: 0,
     period: "month",
-    credits: 180,
-    color: "#3D5A6D",
+    color: "#333",
     perks: [
-      "6 Fast 720p text-to-video generations / day",
-      "180 included generations / month",
-      "40-minute anti-abuse cooldown",
-      "Basic creator profile",
-      "Upload AI films"
+      "Upload up to 5 films / month",
+      "Share detailed production workflows",
+      "Access creator community feed",
+      "Standard creator portfolio profile"
     ],
     limits: [
-      "No Seedance 2.0 premium model",
-      "No 1080p included generations",
-      "No video-to-video included",
-      "No rollover of unused generations"
+      "No advanced analytics metrics",
+      "Standard challenge priority queue",
+      "Standard documentation support"
     ],
-    cta: "Subscribe Basic",
+    cta: "Get Started Free"
+  },
+  {
+    id: "creator",
+    name: "Creator",
+    price: 15,
+    period: "month",
+    color: "#3D5A6D",
+    perks: [
+      "Upload up to 20 films / month",
+      "Full analytics metrics dashboard",
+      "Special Creator badge on profile",
+      "Share detailed production workflows"
+    ],
+    limits: [
+      "Standard challenge priority queue",
+      "No priority technical support"
+    ],
+    cta: "Subscribe Creator"
   },
   {
     id: "pro",
-    name: "Creator Pro",
-    price: 500,
+    name: "Pro",
+    price: 39,
     period: "month",
-    credits: 390,
     color: "#e50914",
     popular: true,
     perks: [
-      "13 Fast 720p text-to-video generations / day",
-      "390 included generations / month",
-      "40-minute anti-abuse cooldown",
-      "Featured portfolio status",
-      "Unlimited manual uploads"
+      "Unlimited film uploads",
+      "Priority indexing in challenges",
+      "Priority 24/7 technical support queue",
+      "Full analytics metrics dashboard",
+      "Special Pro badge on profile"
     ],
-    limits: [
-      "No Seedance 2.0 premium model",
-      "No 1080p included generations",
-      "No video-to-video included",
-      "No rollover of unused generations"
-    ],
-    cta: "Subscribe Pro",
+    limits: [],
+    cta: "Subscribe Pro"
+  }
+];
+
+export const GENERATION_PACKS = [
+  {
+    id: "payg",
+    name: "Pay-As-You-Go",
+    price: 0.10,
+    period: "video",
+    color: "#333",
+    features: [
+      "$0.10 per 5-second video output",
+      "No monthly subscription required",
+      "Pay for what you create dynamically",
+      "High quality standard rendering"
+    ]
   },
   {
-    id: "studio",
-    name: "Creator Studio",
-    price: 800,
+    id: "creator-pack",
+    name: "Creator Pack",
+    price: 29,
     period: "month",
-    credits: 630,
+    color: "#3D5A6D",
+    features: [
+      "50 videos included per month",
+      "5-second duration limits",
+      "Up to 1080p high resolution",
+      "Fast processing queues"
+    ]
+  },
+  {
+    id: "studio-pack",
+    name: "Studio Pack",
+    price: 79,
+    period: "month",
     color: "#C8956C",
-    perks: [
-      "21 Fast 720p text-to-video generations / day",
-      "630 included generations / month",
-      "40-minute anti-abuse cooldown",
-      "Jury review priority queue",
-      "API generation access"
-    ],
-    limits: [
-      "No Seedance 2.0 premium model",
-      "No 1080p included generations",
-      "No video-to-video included",
-      "No rollover of unused generations"
-    ],
-    cta: "Subscribe Studio",
-  },
-];
-
-// Target Gross Margin and cost constants
-export const targetGrossMargin = 0.50;
-export const allocatedFixedCostPerCreatorUsd = 0;
-
-export const MADNESS_PACKS = [
-  { id: "starter", name: "Starter", price: 10, credits: 1000 },
-  { id: "standard", name: "Standard", price: 25, credits: 2625 },
-  { id: "pro", name: "Pro", price: 50, credits: 5500 },
-  { id: "studio", name: "Studio", price: 100, credits: 11750 },
-];
-
-export const CREATOR_PLANS = [
-  { id: "basic", name: "Creator Basic", price: 250, dailyLimit: 6, monthlyCap: 180, includedType: "Fast 720p, 5s text-to-video only", cooldown: 40 },
-  { id: "pro", name: "Creator Pro", price: 500, dailyLimit: 13, monthlyCap: 390, includedType: "Fast 720p, 5s text-to-video only", cooldown: 40 },
-  { id: "studio", name: "Creator Studio", price: 800, dailyLimit: 21, monthlyCap: 630, includedType: "Fast 720p, 5s text-to-video only", cooldown: 40 },
-];
-
-// Let's store dynamic settings on window object so they can be modified by the admin panel live in client memory
-if (typeof window !== "undefined") {
-  window.MADNESS_PACKS = window.MADNESS_PACKS || MADNESS_PACKS;
-  window.CREATOR_PLANS = window.CREATOR_PLANS || CREATOR_PLANS;
-  window.targetGrossMargin = window.targetGrossMargin !== undefined ? window.targetGrossMargin : targetGrossMargin;
-  window.allocatedFixedCostPerCreatorUsd = window.allocatedFixedCostPerCreatorUsd !== undefined ? window.allocatedFixedCostPerCreatorUsd : allocatedFixedCostPerCreatorUsd;
-}
-
-// Function to calculate lowest effective credit value
-export function getLowestEffectiveCreditValue() {
-  const packs = (typeof window !== "undefined" && window.MADNESS_PACKS) ? window.MADNESS_PACKS : MADNESS_PACKS;
-  if (!packs || packs.length === 0) return 0.0085;
-  return Math.min(...packs.map(p => p.price / p.credits));
-}
-
-// Provider costs per action (in USD)
-// Text-to-Video: 5s output, 16:9
-// Video-to-Video: max supported length 15s
-export const PROVIDER_COSTS = {
-  TEXT_TO_VIDEO: {
-    "480p": { Fast: 0.28, "Seedance 2.0": 0.35 },
-    "720p": { Fast: 0.60, "Seedance 2.0": 0.76 },
-    "1080p": { Fast: null, "Seedance 2.0": 1.87 }
-  },
-  VIDEO_TO_VIDEO: {
-    "480p": { Fast: 0.66, "Seedance 2.0": 0.86 },
-    "720p": { Fast: 1.43, "Seedance 2.0": 1.86 },
-    "1080p": { Fast: null, "Seedance 2.0": 4.57 }
+    features: [
+      "200 videos included per month",
+      "5-second duration limits",
+      "Seedance 2.0 premium model access",
+      "Developer API generation access"
+    ]
   }
-};
+];
 
-// Calculate cost dynamically in credits
-export function calculateCreditsToCharge(mode, resolution, model) {
-  const modeKey = mode === "video" ? "VIDEO_TO_VIDEO" : "TEXT_TO_VIDEO";
-  const costMap = PROVIDER_COSTS[modeKey]?.[resolution];
-  if (!costMap) return null;
-  const providerCost = costMap[model];
-  if (providerCost === null || providerCost === undefined) return null; // Not available
-  
-  const margin = (typeof window !== "undefined" && window.targetGrossMargin !== undefined) ? window.targetGrossMargin : targetGrossMargin;
-  const lowestVal = getLowestEffectiveCreditValue();
-  
-  return Math.ceil(providerCost / ((1 - margin) * lowestVal));
+if (typeof window !== "undefined") {
+  window.PLATFORM_PLANS = window.PLATFORM_PLANS || PLATFORM_PLANS;
+  window.GENERATION_PACKS = window.GENERATION_PACKS || GENERATION_PACKS;
+  window.STRIPE_ENABLED = STRIPE_ENABLED;
 }
+
 
