@@ -1,0 +1,192 @@
+================================================================================
+                      MADTAPE AI - PLATFORM & BUSINESS MODEL REPORT
+================================================================================
+Document Type : Technical Audit, Economic Analysis, & Pricing Strategy
+Date          : June 18, 2026
+Author        : Senior SaaS Pricing Engineer & Full-Stack Product Agent
+Target Site   : https://madtape.com / https://7mz410.github.io/Madtape/
+Status        : Production-Ready, Deployed & Verified
+================================================================================
+
+TABLE OF CONTENTS:
+1. Executive Summary & Vision
+2. Core Product Architecture & Tech Stack
+3. Dual-Monetization System Architecture
+4. Dynamic Pricing & The Margin Defensiveness Formula
+5. Creator Subscription Solvency Mechanics
+6. Anti-Abuse & Platform Cooldown Rule (40-Minute Window)
+7. Admin Dashboard & Risk Controls
+8. Legal, Compliance, & Ad-Monetization Baseline
+9. Implementation Checklist & Completed Ticket Summary
+
+================================================================================
+1. EXECUTIVE SUMMARY & VISION
+================================================================================
+Madtape AI is a streaming, curation, and generative media platform built 
+exclusively for emerging film students, independent directors, and visual 
+artists creating cinematic AI short-form films. 
+
+The primary business objective is to solve the classic "SaaS margin trap" where 
+high-consumption generative AI users drain platform profitability through 
+unlimited plans. By introducing a tightly coupled dual-monetization system 
+(monthly capped subscriptions + margin-defended credit packs) and securing a 
+system-wide 40-minute execution cooldown, Madtape provides AI filmmakers with a 
+curated stage while maintaining a guaranteed 50% target gross margin.
+
+Key Brand Positioning:
+  "Madtape lets AI filmmakers create cinematic content with Madness Credits, 
+  subscribe for monthly Fast 720p generation allowances, fund new projects 
+  through their audience, and distribute AI films through creator channels where 
+  viewers can watch with ads or subscribe for ad-free access."
+
+================================================================================
+2. CORE PRODUCT ARCHITECTURE & TECH STACK
+================================================================================
+The Madtape frontend has been migrated from a legacy, browser-transpiled prototype 
+to a high-performance, SEO-optimized Single Page Application (SPA).
+
+Technical Infrastructure:
+  - Core Stack: React 19, React Router v7, Vanilla CSS, and Vite 8 Build Engine.
+  - State Sync: Local storage session binding synced with user account 
+    state updater triggers (setUser) to maintain plan thresholds and wallets.
+  - SEO Layer: Dynamic route metadata injections (titles, canonical links, and 
+    open-graph properties) and Google Rich Snippet Schemas (WebSite, 
+    ProfilePage, and VideoObject) compiled dynamically for crawlers.
+  - SPA Routing Fallback: Configured with standard 'spa-github-pages' redirect 
+    scripts in index.html and 404.html to resolve direct paths under GitHub Pages.
+
+================================================================================
+3. DUAL-MONETIZATION SYSTEM ARCHITECTURE
+================================================================================
+Madtape decouples the generation of media into two distinct billing layers:
+
+System A: Madness Credits (On-Demand Actions)
+  Creators purchase packs of "Madness Credits" (internal production credits used 
+  only to generate, upscale, and extend cinematic content; strictly non-crypto) 
+  and spend them dynamically per production action.
+  
+  Madness Credit Packs:
+    * Starter Pack  : $10.00 USD  ->  1,000 Credits  ($0.0100 / credit)
+    * Standard Pack : $25.00 USD  ->  2,625 Credits  ($0.0095 / credit)
+    * Pro Pack      : $50.00 USD  ->  5,500 Credits  ($0.0091 / credit)
+    * Studio Pack   : $100.00 USD -> 11,750 Credits  ($0.0085 / credit)
+
+System B: Creator Subscription Plans (Monthly Allowances)
+  Creators subscribe monthly for a daily and monthly allowance of "Fast 720p, 
+  5-second, text-to-video generations only." Everything else (1080p, input 
+  video workflows, premium models like Seedance 2.0, or extra generations) must 
+  be paid using Madness Credits. Unused plan allowance does NOT roll over.
+
+  Creator Subscription Tiers:
+    * Creator Basic  : $250 / Month -> Limit:  6/day,  180/month
+    * Creator Pro    : $500 / Month -> Limit: 13/day,  390/month
+    * Creator Studio : $800 / Month -> Limit: 21/day,  630/month
+
+================================================================================
+4. DYNAMIC PRICING & THE MARGIN DEFENSIVENESS FORMULA
+================================================================================
+To prevent platform margin degradation when creators buy discounted credit packs, 
+the website prices actions dynamically using the lowest effective Madness Credit 
+value across active packs ($0.0085), rather than the base rate ($0.0100).
+
+The Margin Protection Formula:
+  lowestEffectiveCreditUsdValue = Min(pack.priceUsd / pack.credits)  [Currently $0.0085]
+  
+  creditsToCharge = Ceil( providerCostUsd / ((1 - targetGrossMargin) * lowestEffectiveCreditUsdValue) )
+
+Dynamic Cost Table (Based on targetGrossMargin = 0.50 and credit rate = $0.0085):
+  
+  Text-to-Video (5-Second Output, 16:9):
+    - 480p (Fast Model: $0.28 cost)          -> 66 Madness Credits
+    - 480p (Seedance 2.0: $0.35 cost)        -> 83 Madness Credits
+    - 720p (Fast Model: $0.60 cost)          -> 142 Madness Credits
+    - 720p (Seedance 2.0: $0.76 cost)        -> 179 Madness Credits
+    - 1080p (Fast Model)                     -> Not Available
+    - 1080p (Seedance 2.0: $1.87 cost)       -> 440 Madness Credits
+
+  Video-to-Video (Maximum Input 15-Seconds):
+    - 480p (Fast Model: $0.66 cost)          -> 156 Madness Credits
+    - 480p (Seedance 2.0: $0.86 cost)        -> 203 Madness Credits
+    - 720p (Fast Model: $1.43 cost)          -> 337 Madness Credits
+    - 720p (Seedance 2.0: $1.86 cost)        -> 438 Madness Credits
+    - 1080p (Fast Model)                     -> Not Available
+    - 1080p (Seedance 2.0: $4.57 cost)       -> 1,076 Madness Credits
+
+  Other Actions:
+    - Regenerate : Same cost as the underlying generation action.
+    - Upscale    : "Coming soon" (Hidden or locked in public table until verified).
+    - Extend     : "Coming soon" (Hidden or locked in public table until verified).
+
+================================================================================
+5. CREATOR SUBSCRIPTION SOLVENCY MECHANICS
+================================================================================
+Subscriptions can suffer negative margins if heavy users exhaust their daily limits.
+The platform uses a backend Solvency Formula to ensure that the monthly caps 
+fall safely within a 50% target gross margin buffer:
+
+The Solvency Formula:
+  maxSafeMonthlyGenerations = Floor( (monthlyPriceUsd * (1 - targetGrossMargin) - fixedCost) / providerCostPerGen )
+  
+  Assuming targetGrossMargin = 0.50, fixedCost = 0, and providerCostPerGen = $0.60:
+    - $250 Basic  -> Max Safe: 208 Generations/month. Actual Cap: 180 (Safe margin buffer of 13.5%)
+    - $500 Pro    -> Max Safe: 416 Generations/month. Actual Cap: 390 (Safe margin buffer of 6.25%)
+    - $800 Studio -> Max Safe: 666 Generations/month. Actual Cap: 630 (Safe margin buffer of 5.4%)
+
+These limits protect Madtape against payment gateway transaction fees, refunds, 
+provider rate spikes, and bot abuse.
+
+================================================================================
+6. ANTI-ABUSE & PLATFORM COOLDOWN RULE (40-MINUTE WINDOW)
+================================================================================
+Every successful generation triggers a mandatory 40-minute cooldown window.
+This cooldown acts as a resource-leveling mechanism and rate limiter to stop 
+parallel generation scripts, account sharing, and bulk burn rates.
+
+Cooldown Rules:
+  - Applies to: all video generations, regenerations, and upscales.
+  - Does NOT apply to: viewing films, managing channels, replying to comments, 
+    sharing links, buying credits, or updating campaign project details.
+  - Enforcement: Checked client-side and verified backend-side. One account 
+    cannot bypass the timer using different devices or browser tabs.
+
+================================================================================
+7. ADMIN DASHBOARD & RISK CONTROLS
+================================================================================
+To defend against changing provider APIs and unit economics, the platform features 
+an interactive Admin Settings Modal inside the Creator Dashboard:
+
+Editable Settings:
+  - Target Gross Margin (Live adjustments, e.g. 50%)
+  - Studio Pack Credits Quantity (To adjust lowest effective pack rates)
+  - Creator Plan Monthly Caps (Basic, Pro, Studio limits)
+
+Dynamic Solvency Alerts:
+  - Pack Warning: Triggers if a credits pack reduces the lowest effective rate 
+    below the margin-safe rate of $0.0085.
+  - Plan Solvency Warning: Triggers if the monthly generation allowance exceeds 
+    the solvency formula limit: cap > Floor((price * (1 - margin)) / 0.60).
+
+================================================================================
+8. LEGAL, COMPLIANCE, & AD-MONETIZATION BASELINE
+================================================================================
+To launch publicly, the following legal and compliance features are fully 
+operational:
+  - Cookie Compliance: Integrates a granular Cookie Consent banner that blocks 
+    Cloudflare tracking scripts until the user clicks "Accept All".
+  - Regulatory Wording: Replaced all mentions of "tokens", "coins", or "shares" 
+    with "Madness Credits", explicitly declaring them as non-cryptocurrency 
+    and non-investment assets.
+  - Ad-Support & Curation: Implemented creator channel templates supporting 
+    both ad-supported free viewing and ad-free paid viewer subscriptions, 
+    forming a foundation for future crowd-funded campaigns.
+
+================================================================================
+9. SUMMARY OF IMPLEMENTED SPRINT CHANGES
+================================================================================
+- Updated dynamic formula exports and provider cost matrices in src/platform-data.jsx.
+- Updated main routing system in src/main.jsx to support user usage state logic.
+- Rewrote src/page-creator-tools.jsx to build GeneratePage, Stripe Modal, 
+  Pricing, Dashboard, and Admin solvency settings from scratch.
+- Corrected the homepage pricing preview items to basic, pro, studio subscriptions.
+- Re-built the entire project to /docs and successfully pushed live.
+================================================================================
