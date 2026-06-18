@@ -294,15 +294,13 @@ function TipModal({ video, user, onLogin, onClose }) {
     }
   };
 
-  // Revenue split: 50% creator, 10% backers, 40% Madtape
-  const toCreator = (final * 0.50).toFixed(2);
-  const toBackers = (final * 0.10).toFixed(2);
-  const toMadtape = (final * 0.40).toFixed(2);
+  // Revenue split: 95% creator, 5% Madtape platform fee
+  const toCreator = (final * 0.95).toFixed(2);
+  const toMadtape = (final * 0.05).toFixed(2);
 
   const send = () => {
-    if (!user) { onClose(); onLogin(); return; }
-    if (final <= 0) return;
-    setSent(true);
+    alert("Payments are coming soon. Real Stripe Checkout transactions are disabled during this beta preview. No real payment will be processed yet.");
+    onClose();
   };
 
   return (
@@ -342,14 +340,14 @@ function TipModal({ video, user, onLogin, onClose }) {
               <div style={{ fontSize: 44, marginBottom: 12 }}>💛</div>
               <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, marginBottom: 8 }}>Thank you!</div>
               <p style={{ fontSize: 13, color: "#b3b3b3", lineHeight: 1.5, marginBottom: 18 }}>
-                €{final} sent. <b style={{ color: "#fff" }}>€{toCreator}</b> goes to {creator?.name || "the creator"}, <b style={{ color: "#fff" }}>€{toBackers}</b> to backers, <b style={{ color: "#fff" }}>€{toMadtape}</b> to Madtape.
+                €{final} sent. <b style={{ color: "#fff" }}>€{toCreator}</b> goes to {creator?.name || "the creator"}, <b style={{ color: "#fff" }}>€{toMadtape}</b> to Madtape.
               </p>
               <button onClick={onClose} style={{ background: "var(--accent)", color: "#fff", padding: "10px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Done</button>
             </div>
           ) : (
             <>
               <div style={{ fontSize: 13, color: "#b3b3b3", marginBottom: 18, lineHeight: 1.5 }}>
-                Love this film? Send a tip directly to the creator. Split automatically on payment.
+                Support this creator directly. Creators receive 95% of the platform support split. Madtape takes a clearly disclosed 5% platform fee. Payment processing fees, refunds, taxes, and legal deductions may apply.
               </div>
 
               {/* Amount buttons */}
@@ -384,9 +382,8 @@ function TipModal({ video, user, onLogin, onClose }) {
               <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 4, padding: "12px 14px", marginBottom: 18 }}>
                 <div style={{ fontSize: 10, letterSpacing: "0.14em", textTransform: "uppercase", color: "#555", marginBottom: 10, fontWeight: 600 }}>How €{final || "—"} is split</div>
                 {[
-                  ["50%", `→ ${creator?.name || "Creator"}`, toCreator, "#46d369"],
-                  ["10%", "→ Film backers (pro-rata)", toBackers, "#f5c518"],
-                  ["40%", "→ Madtape HQ", toMadtape, "#b3b3b3"],
+                  ["95%", `→ ${creator?.name || "Creator"}`, toCreator, "#46d369"],
+                  ["5%", "→ Madtape Platform Fee", toMadtape, "#b3b3b3"],
                 ].map(([pct, label, val, color]) => (
                   <div key={pct} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
                     <div style={{ display: "flex", gap: 8, fontSize: 12 }}>
@@ -404,10 +401,10 @@ function TipModal({ video, user, onLogin, onClose }) {
                 borderRadius: 4, border: "none", cursor: final > 0 ? "pointer" : "not-allowed",
                 display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
               }}>
-                💛 {user ? `Send €${final || "—"} to ${creator?.name?.split(" ")[0] || "Creator"}` : "Sign in to tip"}
+                Payments Coming Soon
               </button>
               <div style={{ fontSize: 11, color: "#444", textAlign: "center", marginTop: 10 }}>
-                Processed securely · No card stored · Cancel anytime
+                Payments are disabled during beta preview. No real transaction will be processed yet.
               </div>
             </>
           )}

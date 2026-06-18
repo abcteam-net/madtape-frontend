@@ -2,9 +2,9 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { StatusPill, fmtNum } from './platform-cards.jsx';
 import { PlatformFooter } from './platform-nav.jsx';
-import { PLATFORM_PLANS, GENERATION_PACKS, STRIPE_ENABLED } from './platform-data.jsx';
+import { PLATFORM_PLANS, STRIPE_ENABLED } from './platform-data.jsx';
 import { db } from './firebase-config.js';
-import { collection, addDoc, query, where, getDocs, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, query, where, getDocs, serverTimestamp } from 'firebase/firestore';
 
 // ── COMMON MODERN STYLES ──
 const inputStyle = {
@@ -61,6 +61,10 @@ export function UploadPage({ user, onLogin }) {
     steps: "", // block of text
     totalTime: "", // e.g. "6 hours"
     totalCost: "", // e.g. 5.50
+    versions: "v1.0",
+    creatorNotes: "",
+    lessonsLearned: "",
+    assetsUsed: "",
   });
   
   const [submitted, setSubmitted] = React.useState(false);
@@ -89,7 +93,7 @@ export function UploadPage({ user, onLogin }) {
       thumbnailUrl: `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`,
       creatorId: user.uid || user.id || "demo-user",
       challengeTag: form.challenge ? (window.CHALLENGES || []).find(c => c.id === form.challenge)?.title : null,
-      prompt: form.prompt,
+      prompt: form.prompt || "Not disclosed",
       model: form.model,
       category: form.category,
       workflow: {
@@ -97,6 +101,10 @@ export function UploadPage({ user, onLogin }) {
         steps: stepsArray,
         totalTime: form.totalTime || "unknown",
         totalCost: costNum,
+        versions: form.versions || "v1.0",
+        creatorNotes: form.creatorNotes || "",
+        lessonsLearned: form.lessonsLearned || "",
+        assetsUsed: form.assetsUsed || "",
       },
       views: 0,
       likes: 0,
@@ -151,7 +159,7 @@ export function UploadPage({ user, onLogin }) {
         <button onClick={() => navigate("/dashboard")} style={{ background: "#fff", color: "#000", padding: "11px 22px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>View in Dashboard</button>
         <button onClick={() => {
           setStep(1); setYoutubeUrl(""); setYoutubeId(""); 
-          setForm({ title: "", desc: "", prompt: "", model: "", category: "", challenge: "", isPublic: true, ownsRights: false, tools: "", steps: "", totalTime: "", totalCost: "" }); 
+          setForm({ title: "", desc: "", prompt: "", model: "", category: "", challenge: "", isPublic: true, ownsRights: false, tools: "", steps: "", totalTime: "", totalCost: "", versions: "v1.0", creatorNotes: "", lessonsLearned: "", assetsUsed: "" }); 
           setSubmitted(false);
         }} style={{ background: "none", color: "#fff", padding: "11px 22px", fontSize: 14, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.2)", cursor: "pointer" }}>Upload Another</button>
       </div>
@@ -254,8 +262,8 @@ export function UploadPage({ user, onLogin }) {
               <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} placeholder="Describe the mood, story, or message behind this generation" value={form.desc} onChange={e => set("desc", e.target.value)} />
             </div>
             <div>
-              <label style={labelStyle}>Core Prompt *</label>
-              <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} placeholder="Share the core text prompt used to render this video" value={form.prompt} onChange={e => set("prompt", e.target.value)} />
+              <label style={labelStyle}>Core Prompt (optional)</label>
+              <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }} placeholder="Share the core text prompt used to render this video, if you choose to reveal it" value={form.prompt} onChange={e => set("prompt", e.target.value)} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
@@ -282,7 +290,7 @@ export function UploadPage({ user, onLogin }) {
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
               <button onClick={() => setStep(1)} style={{ background: "none", color: "#b3b3b3", padding: "12px 20px", fontSize: 14, borderRadius: 4, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }}>← Back</button>
-              <button onClick={() => setStep(3)} disabled={!form.title || !form.desc || !form.prompt || !form.model || !form.category} style={{ background: form.title && form.desc && form.prompt && form.model && form.category ? "var(--accent)" : "#333", color: "#fff", padding: "12px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Continue →</button>
+              <button onClick={() => setStep(3)} disabled={!form.title || !form.desc || !form.model || !form.category} style={{ background: form.title && form.desc && form.model && form.category ? "var(--accent)" : "#333", color: "#fff", padding: "12px 28px", fontSize: 14, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>Continue →</button>
             </div>
           </div>
         )}
@@ -299,7 +307,7 @@ export function UploadPage({ user, onLogin }) {
             </div>
             <div>
               <label style={labelStyle}>Production Steps * <span style={{ fontSize: 10, color: "#555", textTransform: "none" }}>(One step per line)</span></label>
-              <textarea style={{ ...inputStyle, minHeight: 120, resize: "vertical" }} placeholder="Step 1: Generated keyframes in Midjourney&#10;Step 2: Rendered 5s clip using Seedance 2.0 image-to-video&#10;Step 3: Sound design and foley layout inside Adobe Audition" value={form.steps} onChange={e => set("steps", e.target.value)} />
+              <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }} placeholder="Step 1: Generated keyframes in Midjourney&#10;Step 2: Rendered 5s clip using Seedance 2.0 image-to-video&#10;Step 3: Sound design and foley layout inside Adobe Audition" value={form.steps} onChange={e => set("steps", e.target.value)} />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
               <div>
@@ -310,6 +318,24 @@ export function UploadPage({ user, onLogin }) {
                 <label style={labelStyle}>Estimated Cost (USD)</label>
                 <input type="number" step="0.5" style={inputStyle} placeholder="e.g. 4.50" value={form.totalCost} onChange={e => set("totalCost", e.target.value)} />
               </div>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div>
+                <label style={labelStyle}>Workflow Version</label>
+                <input style={inputStyle} placeholder="e.g. v1.0" value={form.versions} onChange={e => set("versions", e.target.value)} />
+              </div>
+              <div>
+                <label style={labelStyle}>Assets Used (optional)</label>
+                <input style={inputStyle} placeholder="e.g. Luma keyframes, reference images" value={form.assetsUsed} onChange={e => set("assetsUsed", e.target.value)} />
+              </div>
+            </div>
+            <div>
+              <label style={labelStyle}>Creator Notes (optional)</label>
+              <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} placeholder="Specify custom prompt weights, camera path settings, and parameters" value={form.creatorNotes} onChange={e => set("creatorNotes", e.target.value)} />
+            </div>
+            <div>
+              <label style={labelStyle}>Lessons Learned (optional)</label>
+              <textarea style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} placeholder="What did you learn? What would you do differently next time?" value={form.lessonsLearned} onChange={e => set("lessonsLearned", e.target.value)} />
             </div>
             <div style={{ display: "flex", gap: 12, marginTop: 10 }}>
               <button onClick={() => setStep(2)} style={{ background: "none", color: "#b3b3b3", padding: "12px 20px", fontSize: 14, borderRadius: 4, border: "1px solid rgba(255,255,255,0.15)", cursor: "pointer" }}>← Back</button>
@@ -356,7 +382,6 @@ export function UploadPage({ user, onLogin }) {
 
 // ── GENERATE PAGE ─────────────────────────────────────────────────────────────
 export function GeneratePage({ user, onLogin }) {
-  const packs = window.GENERATION_PACKS || GENERATION_PACKS;
   const [showNotice, setShowNotice] = React.useState(false);
 
   return (
@@ -364,43 +389,32 @@ export function GeneratePage({ user, onLogin }) {
       <div style={{ maxWidth: 860, margin: "0 auto", padding: "60px 24px 80px", textAlign: "center" }}>
         
         {/* Main Banner */}
-        <div style={{ ...cardStyle, background: "rgba(229,9,20,0.03)", borderColor: "rgba(229,9,20,0.15)", padding: "48px 32px", marginBottom: 56 }}>
+        <div style={{ ...cardStyle, background: "rgba(229,9,20,0.03)", borderColor: "rgba(229,9,20,0.15)", padding: "48px 32px", marginBottom: 40 }}>
           <div style={{ fontSize: 32, marginBottom: 12 }}>⚡</div>
-          <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 0.9, marginBottom: 16 }}>AI Video Generation Tools</h1>
-          <p style={{ fontSize: 16, color: "#b3b3b3", maxWidth: "56ch", margin: "0 auto 24px", lineHeight: 1.5 }}>
-            To promote trust and transparency, generation tools are being restructured. We are moving away from restrictive credits and cooldown windows toward fair, transparent pay-as-you-go systems.
+          <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 0.9, marginBottom: 16 }}>Optional Generation Toolkit</h1>
+          <p style={{ fontSize: 16, color: "#b3b3b3", maxWidth: "60ch", margin: "0 auto 24px", lineHeight: 1.5 }}>
+            Generation is not the core product. Madtape may offer optional generation tools for creators who want to render, extend, upscale, retry, or test scenes inside the platform.
+          </p>
+          <p style={{ fontSize: 14, color: "#888", maxWidth: "60ch", margin: "0 auto 24px" }}>
+            Generation will be priced by real compute usage. No unlimited compute. No hidden credit traps. No below-cost renders.
           </p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
             <span style={{ padding: "6px 12px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, fontSize: 12, color: "#aaa" }}>📅 Planned Release: Month 4</span>
-            <span style={{ padding: "6px 12px", background: "rgba(70,211,105,0.08)", border: "1px solid rgba(70,211,105,0.2)", borderRadius: 100, fontSize: 12, color: "var(--good)" }}>✓ Dynamic Economics Verified</span>
+            <span style={{ padding: "6px 12px", background: "rgba(229,9,20,0.08)", border: "1px solid rgba(229,9,20,0.2)", borderRadius: 100, fontSize: 12, color: "var(--accent)" }}>● Compute-Based Pricing</span>
           </div>
         </div>
 
-        {/* Pricing options */}
-        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 36, marginBottom: 24 }}>Upcoming Generation Tiers</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20, marginBottom: 48 }}>
-          {packs.map((pack) => (
-            <div key={pack.id} style={{ ...cardStyle, display: "flex", flexDirection: "column", alignItems: "center", padding: "28px 20px" }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, marginBottom: 8 }}>{pack.name}</div>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, lineHeight: 1, marginBottom: 4 }}>
-                ${pack.price}
-                <span style={{ fontSize: 13, color: "#777" }}> / {pack.period}</span>
-              </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8, marginTop: 18, marginBottom: 24, textAlign: "left", width: "100%" }}>
-                {pack.features.map(f => (
-                  <div key={f} style={{ fontSize: 12, color: "#b3b3b3", display: "flex", gap: 6 }}>
-                    <span style={{ color: "var(--accent)" }}>●</span> {f}
-                  </div>
-                ))}
-              </div>
-              <button 
-                onClick={() => setShowNotice(true)}
-                style={{ width: "100%", background: "rgba(255,255,255,0.08)", color: "#fff", border: "none", padding: "10px", borderRadius: 4, fontWeight: 700, cursor: "pointer" }}
-              >
-                Reserve Access
-              </button>
-            </div>
-          ))}
+        <div style={{ ...cardStyle, maxWidth: 600, margin: "0 auto 40px", padding: 32 }}>
+          <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, marginBottom: 16 }}>Future Pricing Strategy</h3>
+          <p style={{ fontSize: 13, color: "#aaa", lineHeight: 1.6, marginBottom: 20 }}>
+            Optional generation tools are planned for future release. Generation pricing will depend on real provider cost, selected model, duration, resolution, workflow type, retries, and output quality. Madtape will not offer unlimited generation or below-cost rendering.
+          </p>
+          <button 
+            onClick={() => setShowNotice(true)}
+            style={{ width: "100%", background: "var(--accent)", color: "#fff", border: "none", padding: "12px", borderRadius: 4, fontWeight: 700, cursor: "pointer" }}
+          >
+            Get Notified on Release
+          </button>
         </div>
 
         <p style={{ color: "#555", fontSize: 13 }}>
@@ -415,7 +429,7 @@ export function GeneratePage({ user, onLogin }) {
           <div style={{ ...cardStyle, width: 400, maxWidth: "90vw", display: "flex", flexDirection: "column", gap: 16 }}>
             <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32 }}>Coming Soon</h3>
             <p style={{ color: "#b3b3b3", fontSize: 14, lineHeight: 1.5 }}>
-              Payments and generation features are coming soon. Real Stripe Checkout operations will go live in the public launch.
+              Optional generation toolkit and Stripe integration are disabled during this beta preview. Real compute-based configurations will go live in a future launch.
             </p>
             <button 
               onClick={() => setShowNotice(false)} 
@@ -434,7 +448,6 @@ export function GeneratePage({ user, onLogin }) {
 // ── PRICING PAGE ──────────────────────────────────────────────────────────────
 export function PricingPage({ user, onLogin }) {
   const plans = window.PLATFORM_PLANS || PLATFORM_PLANS;
-  const packs = window.GENERATION_PACKS || GENERATION_PACKS;
   const [showNotice, setShowNotice] = React.useState(false);
 
   return (
@@ -448,7 +461,7 @@ export function PricingPage({ user, onLogin }) {
         </p>
       </div>
 
-      {/* Subscription Plans */}
+      {/* Section A: Creator Publishing Plans */}
       <div style={{ padding: "0 24px 60px" }}>
         <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, marginBottom: 32, textAlign: "center" }}>Creator Publishing Plans</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, maxWidth: 1000, margin: "0 auto" }}>
@@ -486,34 +499,65 @@ export function PricingPage({ user, onLogin }) {
         </div>
       </div>
 
-      {/* Generation options */}
-      <div style={{ padding: "40px 24px 60px", background: "rgba(255,255,255,0.01)", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, marginBottom: 12, textAlign: "center" }}>Optional Generation Packs</h2>
-        <p style={{ fontSize: 14, color: "#777", textAlign: "center", marginBottom: 32 }}>Optional packages for rendering video content directly inside the platform. Decoupled and priced transparently.</p>
-        
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, maxWidth: 1000, margin: "0 auto" }}>
-          {packs.map((pack) => (
-            <div key={pack.id} style={{ ...cardStyle, display: "flex", flexDirection: "column" }}>
-              <div style={{ fontSize: 11, color: "var(--accent)", letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>{pack.name}</div>
-              <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 44, color: "#fff", lineHeight: 1, marginBottom: 4 }}>
-                ${pack.price} 
-                <span style={{ fontSize: 14, color: "#555" }}> / {pack.period}</span>
-              </div>
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, marginTop: 18, marginBottom: 28 }}>
-                {pack.features.map(f => (
-                  <div key={f} style={{ fontSize: 12, color: "#b3b3b3", display: "flex", gap: 6 }}>
-                    <span style={{ color: "var(--accent)" }}>●</span> {f}
-                  </div>
-                ))}
-              </div>
-              <button 
-                onClick={() => {
-                  if (!user) { onLogin(); } else { setShowNotice(true); }
-                }}
-                style={{ width: "100%", background: "var(--accent)", color: "#fff", padding: "10px", fontSize: 13, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}
-              >
-                Purchase Access
-              </button>
+      {/* Section B: Direct Creator Support */}
+      <div style={{ padding: "60px 24px", background: "rgba(255,255,255,0.01)", borderTop: "1px solid rgba(255,255,255,0.05)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, marginBottom: 16 }}>Direct Creator Support</h2>
+          <p style={{ fontSize: 16, color: "#b3b3b3", lineHeight: 1.6, marginBottom: 24 }}>
+            Supporters can directly support creators. Creators receive 95% of the platform support split. Madtape takes a clearly disclosed 5% platform fee. Payment processing fees, refunds, taxes, and legal deductions may apply.
+          </p>
+          <div style={{ display: "inline-block", background: "rgba(229,9,20,0.06)", border: "1px solid rgba(229,9,20,0.2)", padding: "12px 20px", borderRadius: 4, fontSize: 13, color: "var(--accent)" }}>
+            * Payments are currently disabled during the beta preview.
+          </div>
+        </div>
+      </div>
+
+      {/* Section C: Optional Generation */}
+      <div style={{ padding: "60px 24px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, marginBottom: 16 }}>Optional Generation</h2>
+          <p style={{ fontSize: 16, color: "#b3b3b3", lineHeight: 1.6, marginBottom: 24 }}>
+            Optional generation tools are planned for future release. Generation pricing will depend on real provider cost, selected model, duration, resolution, workflow type, retries, and output quality. Madtape will not offer unlimited generation or below-cost rendering.
+          </p>
+          <div style={{ color: "#777", fontSize: 13 }}>
+            No credit packages, pre-paid bundles, or hidden traps. Pay strictly for the GPU compute you use.
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ Block */}
+      <div style={{ padding: "60px 24px 80px", maxWidth: 800, margin: "0 auto" }}>
+        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 40, marginBottom: 32, textAlign: "center" }}>Frequently Asked Questions</h2>
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          {[
+            {
+              q: "Is Madtape an AI video generator?",
+              a: "No. Madtape is a publishing and discovery platform for AI-native cinema. Optional generation tools may be added later, but the core product is publishing, workflow transparency, discovery, and creator support."
+            },
+            {
+              q: "Why do films include workflows?",
+              a: "Because AI-native cinema is also a learning ecosystem. Viewers and creators can understand how a film was made, what tools were used, how long it took, and what it cost."
+            },
+            {
+              q: "How does creator support work?",
+              a: "Supporters can directly support creators. Creators receive 95% of the platform support split, while Madtape takes a clearly disclosed 5% platform fee. Payment processing fees, refunds, taxes, and legal deductions may apply."
+            },
+            {
+              q: "Is generation included in subscriptions?",
+              a: "No. Publishing subscriptions are separate from compute. Optional generation tools will be priced separately based on real usage if enabled later."
+            },
+            {
+              q: "Is this crowdfunding?",
+              a: "Madtape may test reward-based audience support for creative projects. It is not equity investment, profit sharing, or financial crowdfunding."
+            },
+            {
+              q: "Are payments live?",
+              a: "No. Payments are disabled during beta preview. No real transaction is processed yet."
+            }
+          ].map((faq, i) => (
+            <div key={i} style={{ background: "#111", border: "1px solid #1f1f1f", padding: 24, borderRadius: 6 }}>
+              <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, color: "#fff" }}>{faq.q}</h4>
+              <p style={{ fontSize: 14, color: "#aaa", lineHeight: 1.5 }}>{faq.a}</p>
             </div>
           ))}
         </div>
@@ -690,10 +734,10 @@ export function DashboardPage({ user, onLogin }) {
 
             {/* Stripe Connect Card */}
             <div style={{ ...cardStyle, padding: "24px" }}>
-              <span style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Audience Funding (Stripe Connect)</span>
+              <span style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", fontWeight: 700 }}>Audience Support (Stripe Connect)</span>
               <h4 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, color: "#fff", lineHeight: 1, marginTop: 4 }}>Get Paid Directly</h4>
               <p style={{ fontSize: 12, color: "#777", marginTop: 8, lineHeight: 1.4 }}>
-                Set up your Stripe Connect account to receive donations from viewers. We take a flat 5% platform fee to host your content; you keep 95% of your funding.
+                Set up your Stripe Connect account to receive donations and reward-based support from viewers. We take a flat 5% platform fee to host your content; you keep 95% of your funding.
               </p>
               <button 
                 onClick={() => setShowNotice(true)}

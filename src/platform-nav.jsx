@@ -62,13 +62,11 @@ export function PlatformNav({ user, onLogin, onLogout }) {
 
   const links = [
     ["explore", "Explore"],
-    ["trailers", "Trailers"],
-    ["real-films", "AI Cinema"],
-    ["challenges", "Challenges"],
-    ["leaderboard", "Leaderboard"],
-    ["generate", "Generate"],
+    ["upload", "Publish"],
+    ["workflows", "Workflows"],
     ["creators", "Creators"],
     ["pricing", "Pricing"],
+    ["rules", "About"],
   ];
 
   return (
@@ -94,22 +92,28 @@ export function PlatformNav({ user, onLogin, onLogout }) {
         <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 28, display: "block" }} />
       </div>
       <div style={{ display: "flex", gap: 4 }}>
-        {links.map(([key, label]) => (
-          <button 
-            key={key} 
-            onClick={() => navigate(key === "home" ? "/" : "/" + key)} 
-            aria-label={`Go to ${label}`}
-            style={{
-              background: page === key ? "rgba(255,255,255,0.08)" : "none",
-              border: "none", cursor: "pointer", padding: "7px 12px", borderRadius: 4,
-              fontSize: 13, color: page === key ? "#fff" : "#b3b3b3",
-              fontWeight: page === key ? 600 : 400,
-              transition: "color 120ms, background 120ms",
-            }}
-            onMouseEnter={e => { if (page !== key) e.currentTarget.style.color = "#fff"; }}
-            onMouseLeave={e => { if (page !== key) e.currentTarget.style.color = "#b3b3b3"; }}
-          >{label}</button>
-        ))}
+        {links.map(([key, label]) => {
+          const isActive = page === key || (key === "workflows" && page === "explore");
+          return (
+            <button 
+              key={key} 
+              onClick={() => {
+                if (key === "workflows") navigate("/explore");
+                else navigate(key === "home" ? "/" : "/" + key);
+              }} 
+              aria-label={`Go to ${label}`}
+              style={{
+                background: isActive ? "rgba(255,255,255,0.08)" : "none",
+                border: "none", cursor: "pointer", padding: "7px 12px", borderRadius: 4,
+                fontSize: 13, color: isActive ? "#fff" : "#b3b3b3",
+                fontWeight: isActive ? 600 : 400,
+                transition: "color 120ms, background 120ms",
+              }}
+              onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = "#b3b3b3"; }}
+            >{label}</button>
+          );
+        })}
       </div>
       <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
         <div 
@@ -286,14 +290,14 @@ export function PlatformFooter() {
             <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 42, display: "block" }} />
           </div>
           <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, maxWidth: "28ch" }}>
-            An innovative streaming platform transforming film & media production. Dedicated to promoting film students and emerging talent worldwide.
+            The publishing, workflow, discovery, and creator-support layer for AI-native short-form cinema.
           </p>
         </div>
         {[
           ["Platform", [["explore","Explore"], ["challenges","Challenges"], ["leaderboard","Leaderboard"], ["creators","Creators"]]],
-          ["Create", [["upload","Upload a Film"], ["generate","Generate with AI"], ["pricing","Pricing & Credits"]]],
+          ["Create", [["upload","Upload a Film"], ["generate","Generate with AI"], ["pricing","Pricing"]]],
           ["Community", [["challenges","This Week's Challenge"], ["leaderboard","Leaderboard"], ["creators","Creator Directory"]]],
-          ["Company", [["about","About"], ["rules","Content Rules"], ["about","Contact"]]],
+          ["Company", [["rules","Content Rules"], ["about","About"], ["rules","Contact"]]],
         ].map(([heading, items]) => (
           <div key={heading}>
             <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "#555", marginBottom: 16, fontWeight: 600 }}>{heading}</div>

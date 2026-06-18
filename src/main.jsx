@@ -80,7 +80,6 @@ function LoginModal({ onClose, onLogin }) {
         uid: "demo-user",
         name: name || email.split("@")[0] || "demo-creator",
         email,
-        balance: 28,
         plan: "creator"
       });
       return;
@@ -127,7 +126,6 @@ function LoginModal({ onClose, onLogin }) {
         name: "Google Explorer",
         email: "explorer@google.com",
         photoURL: "",
-        balance: 28,
         plan: "creator"
       });
       return;
@@ -350,11 +348,11 @@ function PlatformApp() {
       title = "AI Filmmaker Directory — Madtape";
       desc = "Connect with global generative AI directors, cinemaphotographers, prompt engineers, and visual designers showcasing their craft on Madtape.";
     } else if (path === "/pricing") {
-      title = "Pricing & Credit Plans — Madtape";
-      desc = "Explore our Starter, Creator, and Pro subscription plans. Get credits to generate high-fidelity cinematic AI videos securely through Stripe Checkout.";
+      title = "Creator Publishing Plans — Madtape";
+      desc = "Explore Madtape creator publishing subscription plans. Share detailed workflows, join challenges, and support creators with direct audience backing.";
     } else if (path === "/dashboard") {
       title = "Creator Dashboard — Madtape";
-      desc = "Manage your published AI films, review draft submissions, track analytics views and likes, and check your credit balance limits.";
+      desc = "Manage your published AI films, review draft submissions, track analytics views and likes, and connect Stripe to receive audience backing.";
     } else if (path.startsWith("/video/")) {
       const vidId = path.split("/video/")[1];
       const video = (window.VIDEOS || []).find(v => v.id === vidId);

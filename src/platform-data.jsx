@@ -202,51 +202,16 @@ export const PLATFORM_PLANS = [
   }
 ];
 
-export const GENERATION_PACKS = [
-  {
-    id: "payg",
-    name: "Pay-As-You-Go",
-    price: 0.10,
-    period: "video",
-    color: "#333",
-    features: [
-      "$0.10 per 5-second video output",
-      "No monthly subscription required",
-      "Pay for what you create dynamically",
-      "High quality standard rendering"
-    ]
-  },
-  {
-    id: "creator-pack",
-    name: "Creator Pack",
-    price: 29,
-    period: "month",
-    color: "#3D5A6D",
-    features: [
-      "50 videos included per month",
-      "5-second duration limits",
-      "Up to 1080p high resolution",
-      "Fast processing queues"
-    ]
-  },
-  {
-    id: "studio-pack",
-    name: "Studio Pack",
-    price: 79,
-    period: "month",
-    color: "#C8956C",
-    features: [
-      "200 videos included per month",
-      "5-second duration limits",
-      "Seedance 2.0 premium model access",
-      "Developer API generation access"
-    ]
-  }
-];
+export const generationConfig = {
+  enabled: false,
+  publicPricingVisible: false,
+  pricingMode: "dynamic_provider_cost",
+  message: "Optional generation is coming later. Pricing will depend on model, duration, resolution, workflow type, and provider cost."
+};
 
 if (typeof window !== "undefined") {
   window.PLATFORM_PLANS = window.PLATFORM_PLANS || PLATFORM_PLANS;
-  window.GENERATION_PACKS = window.GENERATION_PACKS || GENERATION_PACKS;
+  window.generationConfig = window.generationConfig || generationConfig;
   window.STRIPE_ENABLED = STRIPE_ENABLED;
 }
 

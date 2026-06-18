@@ -233,10 +233,24 @@ export function VideoDetailPage() {
                   </div>
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 20, fontSize: 12, color: "#777" }}>
-                <span>Production Time: <b style={{ color: "#fff" }}>{video.workflow?.totalTime || "5 hours"}</b></span>
-                <span>· Est. Cost: <b style={{ color: "#fff" }}>${(video.workflow?.totalCost || 1.80).toFixed(2)} USD</b></span>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, fontSize: 12, color: "#777", background: "rgba(255,255,255,0.01)", padding: 16, borderRadius: 4, border: "1px solid rgba(255,255,255,0.04)", marginBottom: 16 }}>
+                <div>Production Time: <b style={{ color: "#fff" }}>{video.workflow?.totalTime || "5 hours"}</b></div>
+                <div>Est. Cost: <b style={{ color: "#fff" }}>${(video.workflow?.totalCost || 1.80).toFixed(2)} USD</b></div>
+                <div>Workflow Version: <b style={{ color: "#fff" }}>{video.workflow?.versions || "v1.0"}</b></div>
+                <div>Assets Used: <b style={{ color: "#fff" }}>{video.workflow?.assetsUsed || "None declared"}</b></div>
               </div>
+              {video.workflow?.creatorNotes && (
+                <div style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Creator Notes</div>
+                  <div style={{ fontSize: 12, color: "#aaa", lineHeight: 1.4 }}>{video.workflow.creatorNotes}</div>
+                </div>
+              )}
+              {video.workflow?.lessonsLearned && (
+                <div>
+                  <div style={{ fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Lessons Learned</div>
+                  <div style={{ fontSize: 12, color: "#aaa", lineHeight: 1.4 }}>{video.workflow.lessonsLearned}</div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -282,14 +296,14 @@ export function VideoDetailPage() {
             <div style={{ color: "var(--accent)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase", fontWeight: 700, marginBottom: 8 }}>Support the Creator</div>
             <h3 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 32, marginBottom: 8 }}>Donate to {creator?.name || "Creator"}</h3>
             <p style={{ color: "#b3b3b3", fontSize: 12, lineHeight: 1.5, marginBottom: 20 }}>
-              All donations (minus a flat 5% platform hosting fee) are processed securely and sent directly to the creator's account to fund their next cinematic AI film project.
+              Support this creator directly. Creators receive 95% of the platform support split. Madtape takes a clearly disclosed 5% platform fee. Payment processing fees, refunds, taxes, and legal deductions may apply. Payments are disabled during beta preview. No real transaction will be processed yet.
             </p>
             
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 20 }}>
               {["$5", "$10", "$25"].map(amt => (
                 <button 
                   key={amt} 
-                  onClick={() => alert("Payments are coming soon. Real Stripe Checkout donations are disabled during this beta preview. No money is deducted.")}
+                  onClick={() => alert("Payments are coming soon. Real Stripe Checkout transactions are disabled during this beta preview.")}
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 4, padding: "10px", color: "#fff", fontWeight: 700, cursor: "pointer" }}
                 >
                   {amt}
@@ -298,8 +312,14 @@ export function VideoDetailPage() {
             </div>
 
             <button 
+              onClick={() => alert("Payments are coming soon. Real Stripe Checkout transactions are disabled during this beta preview.")}
+              style={{ width: "100%", background: "#333", color: "#fff", padding: "12px", borderRadius: 4, border: "none", fontSize: 14, fontWeight: 700, cursor: "not-allowed", marginBottom: 10 }}
+            >
+              Payments Coming Soon
+            </button>
+            <button 
               onClick={() => setShowTip(false)}
-              style={{ width: "100%", background: "var(--accent)", color: "#fff", padding: "12px", borderRadius: 4, border: "none", fontSize: 14, fontWeight: 700, cursor: "pointer" }}
+              style={{ width: "100%", background: "none", color: "#aaa", padding: "12px", borderRadius: 4, border: "1px solid rgba(255,255,255,0.1)", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
             >
               Cancel
             </button>
