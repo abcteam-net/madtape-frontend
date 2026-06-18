@@ -10,7 +10,7 @@ import { SearchPage } from './page-search.jsx';
 import { RulesPage, PrivacyPage, TermsPage, CookiePolicyPage, DMCAPage } from './page-legal.jsx';
 import { PlatformNav } from './platform-nav.jsx';
 import { VideoCard, CreatorCard, ChallengeCard } from './platform-cards.jsx';
-import { CREATORS, VIDEOS, CHALLENGES, LEADERBOARD, PLATFORM_PLANS, CREDIT_COSTS } from './platform-data.jsx';
+import { CREATORS, VIDEOS, CHALLENGES, LEADERBOARD, PLATFORM_PLANS } from './platform-data.jsx';
 import ReactDOM from 'react-dom/client';
 import React from 'react';
 // Madtape AI — main app router
@@ -282,7 +282,7 @@ window.VIDEOS = VIDEOS;
 window.CHALLENGES = CHALLENGES;
 window.LEADERBOARD = LEADERBOARD;
 window.PLATFORM_PLANS = PLATFORM_PLANS;
-window.CREDIT_COSTS = CREDIT_COSTS;
+// CREDIT_COSTS is deprecated in favor of dynamic provider-cost calculation formulas.
 
 function PlatformApp() {
   const [user, setUser] = React.useState(() => {
@@ -536,9 +536,9 @@ function PlatformApp() {
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/creators" element={<CreatorsPage />} />
           <Route path="/upload" element={<UploadPage user={user} onLogin={login} />} />
-          <Route path="/generate" element={<GeneratePage user={user} onLogin={login} />} />
+          <Route path="/generate" element={<GeneratePage user={user} onLogin={login} setUser={handleSetUser} />} />
           <Route path="/pricing" element={<PricingPage user={user} onLogin={login} setUser={handleSetUser} />} />
-          <Route path="/dashboard" element={<DashboardPage user={user} onLogin={login} />} />
+          <Route path="/dashboard" element={<DashboardPage user={user} onLogin={login} setUser={handleSetUser} />} />
           <Route path="/video/:videoId" element={<VideoDetailPage />} />
           <Route path="/profile/:creatorId" element={<ProfilePage />} />
           <Route path="/profile" element={<ProfilePage />} />

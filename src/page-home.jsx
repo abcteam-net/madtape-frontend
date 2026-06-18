@@ -208,9 +208,9 @@ export function HomePage({ user, onLogin }) {
       <section style={{ padding: "60px 56px 80px", background: "rgba(0,0,0,0.4)", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 0.9, marginBottom: 14, letterSpacing: "0.005em" }}>Generate with Seedance. Publish on Madtape.</h2>
-          <p style={{ fontSize: 16, color: "#b3b3b3", maxWidth: "52ch", margin: "0 auto 28px" }}>Use credits to create short cinematic AI videos directly inside the platform. Generation is controlled, transparent, and designed for serious creators.</p>
+          <p style={{ fontSize: 16, color: "#b3b3b3", maxWidth: "52ch", margin: "0 auto 28px" }}>Use Madness Credits or subscribe to Creator Plans to generate cinematic AI videos directly inside the platform. Pricing is designed to protect creator margins.</p>
           <div style={{ display: "flex", gap: 24, justifyContent: "center", fontSize: 13, color: "#777", marginBottom: 40 }}>
-            {[["Free","Upload only"],["€9/mo","10 credits"],["€29/mo","40 credits"],["€79/mo","120 credits"]].map(([p, c]) => (
+            {[["Free","Upload only"],["$250/mo","Creator Basic"],["$500/mo","Creator Pro"],["$800/mo","Creator Studio"]].map(([p, c]) => (
               <div key={p} style={{ textAlign: "center" }}>
                 <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 28, color: "#fff" }}>{p}</div>
                 <div style={{ fontSize: 11, color: "#777", marginTop: 2 }}>{c}</div>
