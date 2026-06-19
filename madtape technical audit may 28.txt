@@ -1,0 +1,472 @@
+# Madtape.com — Technical Audit
+
+---
+
+## 1. Executive Summary
+
+Madtape is a React-based single-page application (SPA) hosted on **GitHub Pages**. The homepage and all SPA-routed views load correctly via client-side navigation, but every URL accessed directly (typed into the browser, opened via link share, bookmarked, or followed from a search engine) returns a **GitHub Pages 404 error**. This affects every route in the application — including legal pages, video pages, creator profiles, and all core platform sections.
+
+Secondary issues include: no actual video files behind the player, all footer navigation links are dead (`href="#"`), the AI Cinema index has 0 data entries, multiple film card thumbnails are broken on inner pages, platform stats appear to be hardcoded dummy values, and the meta description is inconsistent across pages. Despite these issues, Firebase Auth is initialized correctly, the search function works, the sign-in/register modal functions, and SEO fundamentals on the homepage are mostly solid.
+
+---
+
+## 2. Critical Technical Issues
+
+### 2.1 Direct URL Access Returns GitHub Pages 404 — All Routes
+
+**Root cause:** The site is a SPA (React with client-side routing) hosted on GitHub Pages. GitHub Pages has no server-side routing fallback, so any URL that is not literally a file path returns its default 404 page. The solution is a `404.html` redirect trick or migration to a host that supports SPA routing (Netlify, Vercel, Cloudflare Pages, etc.).
+
+**Affected routes — all confirmed 404 on direct access:**
+
+| URL | Expected behavior | Actual |
+|---|---|---|
+| `/explore` | Explore browse page | GitHub Pages 404 |
+| `/challenges` | Challenges listing | GitHub Pages 404 |
+| `/leaderboard` | Rankings page | GitHub Pages 404 |
+| `/creators` | Creator directory | GitHub Pages 404 |
+| `/pricing` | Pricing page | GitHub Pages 404 |
+| `/rules` | Content rules | GitHub Pages 404 |
+| `/privacy` | Privacy policy | GitHub Pages 404 |
+| `/terms` | Terms of service | GitHub Pages 404 |
+| `/cookie-policy` | Cookie policy | GitHub Pages 404 |
+| `/dmca` | DMCA policy | GitHub Pages 404 |
+| `/video/glass-hour` | Video player | GitHub Pages 404 |
+| `/video/last-train-eden` | Video player | GitHub Pages 404 |
+| `/profile/kira-motion` | Creator profile | GitHub Pages 404 |
+| `/trailers` | Trailers page | GitHub Pages 404 |
+| `/real-films` | AI Cinema index | GitHub Pages 404 |
+| `/generate` | Generation page | GitHub Pages 404 |
+| `/upload` | Upload page | GitHub Pages 404 |
+| `/search` | Search results | GitHub Pages 404 |
+
+This means every link shared externally, every search engine result click, every social share, every direct bookmark — breaks. Only users who arrive at `https://madtape.com/` and navigate within the SPA can access any content.
+
+### 2.2 No Video Content in Video Player
+
+On the video detail page (`/video/glass-hour` and presumably all others), clicking the play button results in a completely black screen with no video loading. The player renders UI chrome (play button, timeline bar, duration, HD badge) but no video file is attached. No network request for a video file was observed. This is the platform's core media functionality and it is completely non-functional.
+
+### 2.3 AI Cinema Page Has Zero Content
+
+The "AI Cinema" nav item routes to `/real-films`. The page renders with the heading "Real AI Cinema." and a table structure, but displays "FULL INDEX · 0 FILMS" with no data populated. The "HIGHLIGHTED FILMS" section is completely empty. This is an empty placeholder page presented as a live feature.
+
+### 2.4 All Footer Navigation Links Are Dead (`href="#"`)
+
+Every link in the footer nav columns (Platform, Create, Community, Company) has `href="#"`. Clicking any of them scrolls the page to the top rather than navigating. The only functional links in the footer are the five legal/policy links in the bottom bar (`/rules`, `/privacy`, `/terms`, `/cookie-policy`, `/dmca`) — which all 404 on direct access (see 2.1 above).
+
+Broken footer links include: Explore, Challenges, Leaderboard, Creators, Upload a Film, Generate with AI, Pricing & Credits, This Week's Challenge, Leaderboard, Creator Directory, About, Content Rules, Contact.
+
+### 2.5 Three Inline Homepage CTAs Link Nowhere (`href="#"`)
+
+| Section | CTA text | href |
+|---|---|---|
+| Film Students | "SUBMIT YOUR STUDENT FILM →" | `#` |
+| Cultural Exchange | "JOIN THE COMMUNITY →" | `#` |
+| Emerging Talent | "SEE THIS WEEK'S PICKS →" | `#` |
+| Featured Films | "Browse all →" | `#` |
+
+### 2.6 Legal/Policy Pages Are Inaccessible
+
+All five legal documents linked in the cookie consent banner and footer bottom bar — Privacy Policy, Terms of Service, Content Rules, Cookie Policy, DMCA Policy — return 404 on direct access. The cookie consent banner itself links to `/cookie-policy` which 404s. This is a compliance-level issue: users cannot read the policies they are being asked to consent to.
+
+---
+
+## 3. Broken Links / Buttons / Forms
+
+### Broken links (confirmed)
+
+- `href="#"` — "Browse all →" (Homepage, Featured AI Films section)
+- `href="#"` — "SUBMIT YOUR STUDENT FILM →" (Homepage, Film Students section)
+- `href="#"` — "JOIN THE COMMUNITY →" (Homepage, Cultural Exchange section)
+- `href="#"` — "SEE THIS WEEK'S PICKS →" (Homepage, Emerging Talent section)
+- `href="#"` — All 14 footer nav column links (see Section 2.4)
+- `/cookie-policy` — Linked from cookie consent banner, returns 404
+
+### Broken buttons
+
+- **"Submit Your Entry →"** (Challenges section on homepage) — No navigation occurs, no modal opens
+- **Video play button** (all video player pages) — UI renders but no video loads; screen stays black
+- **"💛 Tip" buttons** (all film cards) — No action observed; presumably require auth or backend integration not yet wired up
+
+### Broken thumbnails (images with alt text instead of image)
+
+- "Glass Hour II" thumbnail — broken on video detail page "More like this" section
+- "Last Train to Eden" thumbnail — broken on creator profile `/profile/kira-motion`
+- "Sable Run" thumbnail — broken on creator profile `/profile/kira-motion`
+- Profile header banner image — missing/blank on creator profile page
+
+### Forms
+
+- **Sign In form** — Renders correctly (email + password + Google SSO). Not tested with real credentials. Firebase Auth is initialized.
+- **Register form** — Renders correctly (display name optional + email + password + Google SSO). Not tested with real credentials.
+- **Generate form** — Renders with prompt textarea, duration/resolution/style selects, cost estimator. Correctly gates generation behind sign-in. Not testable without auth.
+- **Search** — Functional. Returns live results. Works correctly.
+
+---
+
+## 4. Missing or Incomplete Pages
+
+| Page / Route | Status | Notes |
+|---|---|---|
+| `/explore` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/challenges` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/leaderboard` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/creators` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/pricing` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/trailers` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/real-films` | Present but empty | 0 films in the index |
+| `/generate` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/upload` | Present (SPA only) | Loads via nav click; 404 on direct URL |
+| `/rules` | 404 | Does not exist |
+| `/privacy` | 404 | Does not exist |
+| `/terms` | 404 | Does not exist |
+| `/cookie-policy` | 404 | Does not exist |
+| `/dmca` | 404 | Does not exist |
+| `/about` | Not found anywhere | No "About" page exists even via SPA |
+| `/contact` | Not found anywhere | No "Contact" page or form exists |
+| `/dashboard` | Unknown | Listed in robots.txt Disallow; never accessible to test |
+| `/profile/[creator]` | Present (SPA only) | 404 on direct URL |
+| `/video/[slug]` | Present (SPA only) | 404 on direct URL; video player non-functional |
+| `/search` | Present (SPA only) | 404 on direct URL; disallowed in robots.txt |
+
+---
+
+## 5. Placeholder Content Inventory
+
+### 5.1 Platform Statistics (Homepage)
+
+**Location:** Homepage hero section, stat strip  
+**Content:** `16K+ FILMS UPLOADED`, `3.2K EMERGING CREATORS`, `48+ COUNTRIES`, `4 AI MODELS`  
+**Why placeholder:** The Explore page shows only **5 films** under "Featured" and **16 films** under "Latest." The Creators page shows exactly 8 creators. These numbers are entirely inconsistent with 16,000+ uploads and 3,200 creators. These are hardcoded aspirational or launch-target numbers presented as live data.  
+**What's needed:** Either connect these stats to real database counts via an API call, or remove them until the platform reaches real scale.
+
+### 5.2 Film View/Like Counts
+
+**Location:** All film cards across Explore, Leaderboard, video pages, search results  
+**Content:** e.g., `▶ 23.1K`, `♥ 4.2K`, `▶ 18.6K`  
+**Why placeholder:** The platform appears to have very few actual users. These view and like counts are inconsistent with a platform of that size and are almost certainly hardcoded seed data.  
+**What's needed:** Real-time counts pulled from a database.
+
+### 5.3 Creator Profiles — Avatar Images
+
+**Location:** All 8 creator cards on `/creators` and all creator profile pages  
+**Content:** Single-letter colored circle (e.g., "K", "N", "S") as avatar  
+**Why placeholder:** None of the 8 featured creators have uploaded a real profile photo. All use auto-generated initial avatars.  
+**What's needed:** Real creator profile photos, or a clear indication these are real users who chose not to upload photos.
+
+### 5.4 Creator Profile — Banner Image
+
+**Location:** `/profile/kira-motion` (and likely all other profile pages)  
+**Content:** The profile banner area at the top is a featureless dark gradient — no custom banner image  
+**Why placeholder:** No content has been uploaded for the banner slot.  
+**What's needed:** Creator-uploaded banner images or a defined default.
+
+### 5.5 AI Cinema Index — Empty
+
+**Location:** `/real-films`  
+**Content:** "FULL INDEX · 0 FILMS" with empty table and empty "HIGHLIGHTED FILMS" section  
+**Why placeholder:** The page's purpose is to be a curated index of notable AI-generated films. It has no entries. The data sources (WAIFF, Runway AI Film Festival, etc.) are listed in a footer note but no actual film data has been entered.  
+**What's needed:** Real film entries with thumbnails, creator credits, source festival, runtime, year, category, model, and links.
+
+### 5.6 Trailers Page — "Submit Your Trailer" Button
+
+**Location:** `/trailers`, below the film list  
+**Content:** "↑ Submit Your Trailer" button  
+**Why placeholder:** Clicking this button has no visible effect (likely requires auth or routes somewhere not yet built). The destination is undefined.  
+**What's needed:** Functional submission flow — either a form, a redirect to upload, or a mailto link.
+
+### 5.7 Homepage "Explore AI Films" Button
+
+**Location:** Homepage hero, second CTA  
+**Content:** "ⓘ Explore AI Films"  
+**Why placeholder:** The ⓘ (info) icon is atypical for an "Explore" action button — suggests a placeholder or todo icon that was never replaced with the correct icon.  
+**What's needed:** Replace with an appropriate icon (e.g., a play/browse icon).
+
+### 5.8 About and Contact Pages
+
+**Location:** Footer "Company" column — "About" and "Contact" links  
+**Content:** Both link to `href="#"` and no pages exist at `/about` or `/contact`  
+**Why placeholder:** These are listed as live navigation items but the pages have not been built.  
+**What's needed:** A company about page and a contact form or contact email.
+
+### 5.9 Video Player — Missing Actual Video Files
+
+**Location:** All video pages (e.g., `/video/glass-hour`, `/video/last-train-eden`)  
+**Content:** Player UI renders but video is blank black; no video file loads  
+**Why placeholder:** The video player component exists but no video source is connected. Film cards display thumbnail still images but the actual video files are absent.  
+**What's needed:** Real video files uploaded to storage and referenced in the video player's `src` attribute.
+
+### 5.10 Leaderboard Thumbnails
+
+**Location:** `/leaderboard`, rows 3 ("Glass Hour II"), 5 ("The Burning Map"), 6 ("Soft Circuit")  
+**Content:** Placeholder thumbnails — no image loads for some entries  
+**Why placeholder:** Thumbnail images are missing for several leaderboard entries despite data records existing.
+
+---
+
+## 6. SEO / Metadata Issues
+
+### 6.1 Homepage Meta Description Inconsistency
+
+The homepage has **two different meta descriptions** defined: the `<meta name="description">` tag reads "Stream the best 15-second cinematic AI films. Join creators, upload projects, and compete in standard generative challenge pools." The OG description (`og:description`) reads "Discover, stream, and generate cinematic short-form AI films. The premier global hub for emerging AI filmmakers, cinematic challenges, and latent space explorations." These should be identical.
+
+Additionally, "compete in standard generative challenge pools" is awkward/generic-sounding copy that should be replaced with more specific messaging.
+
+### 6.2 Canonical Tag on Sub-Routes Inherits `/upload`
+
+When the user navigates to `/upload` (or is on the upload page), the canonical URL is set to `https://madtape.com/upload`. This appears to be correct per-page canonical behavior. However, this needs to be verified across all routes to ensure canonical tags update dynamically with each SPA route change. If the canonical tag doesn't update, all pages will report the same canonical URL to search engines.
+
+### 6.3 No Schema Markup Beyond WebSite
+
+The homepage has a single JSON-LD block of type `WebSite` with a `SearchAction` pointing to `/search?q={search_term_string}`. There is no structured data for VideoObject, Person, BreadcrumbList, or FAQPage — all of which would be highly relevant for a film platform.
+
+### 6.4 The `robots.txt` Disallows `/search` — a Publicly Accessible Route
+
+`robots.txt` has `Disallow: /search` for all crawlers. The search results page is publicly accessible and contains user-generated content (film titles, creator names) that has SEO value. This may be intentional but deserves review.
+
+### 6.5 All Inner Pages Appear to Share the Same Meta Title
+
+The `<title>` tag on all observed inner pages reads "Madtape AI — The Home of Short-Form AI Cinema" rather than a page-specific title (e.g., "Glass Hour — AI Short Film — Madtape" is correctly set on the video page, but `/trailers`, `/real-films`, and `/generate` all reuse the same homepage title). Each route needs a unique `<title>` tag.
+
+### 6.6 No `sitemap.xml` `<lastmod>` on Video/Profile Entries
+
+The sitemap references all 16 video pages and 8 creator profile pages but provides no `<lastmod>` dates for these entries. For dynamic content pages, `<lastmod>` helps crawlers prioritize re-indexing.
+
+### 6.7 `robots.txt` Also Disallows `/upload` and `/dashboard` — Correct, but `/generate` Should Be Reviewed
+
+`/generate` is disallowed from crawlers, yet the Generate page shows publicly visible content (credit pricing, tool descriptions) that could have SEO value. Consider whether this disallow is intentional.
+
+---
+
+## 7. Backend / Functional Gaps
+
+### 7.1 No Video File Hosting / CDN Integration
+
+The most fundamental backend gap: no video files are connected to the video player. The platform's entire value proposition — streaming AI short films — is non-functional. There is no observable CDN, no video manifest (HLS/DASH), no `<video src>`, no streaming API call in the network layer.
+
+### 7.2 Platform Stats Are Hardcoded
+
+The figures "16K+ Films Uploaded," "3.2K Emerging Creators," "48+ Countries," and "4 AI Models" appear to be hardcoded in the HTML rather than fetched from a backend API. When the platform has real users these numbers must be replaced with live database-driven counts.
+
+### 7.3 AI Cinema Index Has No Data Source Connected
+
+The `/real-films` page renders an empty table. No API call populates it. The film data from the listed sources (WAIFF, Runway Film Festival, etc.) has not been ingested or seeded.
+
+### 7.4 "Tip" / Tipping Feature Has No Backend
+
+The 💛 "Tip" button appears on every film card across all pages but produces no visible action. There is no tipping flow, payment modal, or error message. This appears to be a stub feature with no backend implementation.
+
+### 7.5 "Save" and "Follow" Buttons — Auth-Gated Behavior Unclear
+
+On the video detail page, the "+ Save" button and "+ Follow" button on the creator card do not visibly respond to clicks when unauthenticated. There is no prompt to sign in, no tooltip, no toast notification. The expected UX (prompt to sign in) is missing.
+
+### 7.6 Revenue Share Claim — No Mechanism Visible
+
+The pricing page and homepage feature list both advertise "Revenue share on featured films" as a Creator plan benefit and "Revenue share on all published films" as a Pro benefit. No mechanism for this is visible anywhere in the platform — no earnings dashboard, no payout configuration, no documentation.
+
+### 7.7 `SearchAction` Schema Points to Disallowed URL
+
+The homepage JSON-LD `SearchAction` target is `https://madtape.com/search?q={search_term_string}`, but `/search` is disallowed in `robots.txt`. Google's Sitelinks Searchbox requires the search endpoint to be crawlable.
+
+---
+
+## 8. Security / Performance Notes
+
+### 8.1 HTTPS — OK
+
+The site correctly serves over HTTPS with a valid certificate. No mixed-content issues observed.
+
+### 8.2 Cookie Consent — Partially Functional
+
+The cookie consent banner correctly presents three options (Decline All, Necessary Only, Accept All). The choice is stored in `localStorage` as `__madtape_cookie_consent`. However:
+- The "Cookie Policy" link in the banner points to `/cookie-policy` which returns 404 — users cannot read the policy before consenting.
+- There is no way for a user to change their consent after dismissing the banner, other than clearing localStorage. A re-open mechanism should exist (a floating cookie icon does appear in the bottom right — verify it triggers the banner).
+
+### 8.3 No Security Headers Observed
+
+Because the site is on GitHub Pages, custom HTTP security headers (CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy) cannot be set at the server level. This is a platform limitation, not a code issue, but should be addressed if moving to Vercel/Netlify/Cloudflare where headers can be configured.
+
+### 8.4 Firebase API Key in Client-Side Code
+
+Firebase Auth is initialized client-side. While Firebase API keys in frontend code are by design not secret (they identify the project, not grant admin access), the Firebase project should have App Check and proper security rules configured to prevent abuse (unauthorized data writes, credential stuffing, etc.).
+
+### 8.5 GitHub Pages Infrastructure Exposure
+
+The 404 error pages explicitly reveal "GitHub Pages" as the hosting provider, including links to GitHub's documentation. This exposes the infrastructure stack to anyone who navigates to a broken URL. A custom 404 page would prevent this.
+
+### 8.6 OG Image Has a Space-Encoded Filename
+
+The og:image URL is `https://madtape.com/uploads/panel%201-b5d859a2.png` — the source filename contained a space (encoded as `%20`). While it resolves correctly (confirmed HTTP 200), using spaces in asset filenames is bad practice and can cause cache/CDN issues. Rename to `panel-1-b5d859a2.png`.
+
+---
+
+## 9. Developer Task List
+
+---
+
+### TASK 1 — Fix SPA Routing on GitHub Pages (or migrate host)
+
+**Issue:** All routes except `/` return GitHub Pages 404 on direct access  
+**Page/Location:** Entire site, all routes  
+**Priority:** Critical  
+**Recommended fix:** Option A: Add a `404.html` that replicates the SPA shell and includes the GitHub Pages SPA redirect script (copies the path into the URL hash or session storage and redirects to `/`). Option B (preferred): Migrate hosting to Vercel, Netlify, or Cloudflare Pages, which natively support SPA fallback with a single config line. Add `vercel.json` with `"rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]`.  
+**Acceptance criteria:** Every URL in the sitemap, when pasted directly into a browser, loads the correct page content rather than a 404. No GitHub Pages branding appears anywhere.
+
+---
+
+### TASK 2 — Implement Video File Storage and Playback
+
+**Issue:** Video player component renders but no video plays; all film video content is absent  
+**Page/Location:** All `/video/[slug]` pages  
+**Priority:** Critical  
+**Recommended fix:** Upload video files to a CDN-backed storage bucket (e.g., Cloudflare R2, AWS S3 + CloudFront, or Firebase Storage). Update the video data model to include a `videoUrl` field pointing to the CDN URL. Connect the video player component's `src` prop to this field. Use HLS for adaptive bitrate if files are >10MB.  
+**Acceptance criteria:** Clicking play on any film page begins video playback within 3 seconds. Progress bar reflects actual file duration. HD toggle works.
+
+---
+
+### TASK 3 — Replace All `href="#"` Footer Links
+
+**Issue:** All footer navigation column links have `href="#"` and go nowhere  
+**Page/Location:** Footer on all pages — 14 links total across Platform, Create, Community, Company columns  
+**Priority:** Critical  
+**Recommended fix:** Replace each `href="#"` with the correct SPA route. For routes not yet built (About, Contact), either build those pages or temporarily remove the links. Specifically: Explore → `/explore`, Challenges → `/challenges`, Leaderboard → `/leaderboard`, Creators → `/creators`, Upload a Film → `/upload`, Generate with AI → `/generate`, Pricing & Credits → `/pricing`, This Week's Challenge → `/challenges`, Creator Directory → `/creators`, About → `/about` (build page), Content Rules → `/rules`, Contact → `/contact` (build page).  
+**Acceptance criteria:** Every footer link navigates to the correct destination page. No link performs a scroll-to-top.
+
+---
+
+### TASK 4 — Build and Deploy Legal / Policy Pages
+
+**Issue:** Privacy Policy, Terms of Service, Content Rules, Cookie Policy, and DMCA Policy all 404  
+**Page/Location:** `/privacy`, `/terms`, `/rules`, `/cookie-policy`, `/dmca`  
+**Priority:** Critical  
+**Recommended fix:** Write and deploy all five legal pages as SPA routes. These pages are legally required to be accessible — especially Privacy Policy and Cookie Policy given the site collects Firebase Auth data and uses analytics cookies. The cookie consent banner links to `/cookie-policy`, which must work before users can give informed consent.  
+**Acceptance criteria:** All five URLs resolve with readable legal document content. The Cookie Policy link in the consent banner navigates correctly.
+
+---
+
+### TASK 5 — Fix Homepage Inline CTA Links
+
+**Issue:** "Browse all →", "Submit Your Student Film →", "Join the Community →", "See This Week's Picks →" all have `href="#"`  
+**Page/Location:** Homepage — Featured AI Films section, Film Students section, Cultural Exchange section, Emerging Talent section  
+**Priority:** High  
+**Recommended fix:** Route each to the appropriate page: "Browse all →" → `/explore`, "Submit Your Student Film →" → `/upload` (or a dedicated student upload flow), "Join the Community →" → `/creators` or a community signup page, "See This Week's Picks →" → `/explore?filter=staff-picks` or `/leaderboard`.  
+**Acceptance criteria:** Each button navigates to a functional destination page.
+
+---
+
+### TASK 6 — Populate the AI Cinema Index (`/real-films`)
+
+**Issue:** Page shows "0 FILMS" and blank highlighted section  
+**Page/Location:** `/real-films`  
+**Priority:** High  
+**Recommended fix:** Seed the film index with real entries sourced from WAIFF, Runway AI Film Festival, and the listed community sources. Each entry needs: number, thumbnail image, title & creator, category, model used, runtime, year, and source link. Implement a data fetch from a backend collection or a static JSON file.  
+**Acceptance criteria:** The index shows at minimum 10 real AI cinema entries with all table columns populated. Highlighted Films section shows 2–3 featured entries with thumbnails.
+
+---
+
+### TASK 7 — Fix Broken Film Thumbnails
+
+**Issue:** Several film card thumbnails fail to load, showing alt text as broken images  
+**Page/Location:** Video detail page ("Glass Hour II" in More Like This), creator profile `/profile/kira-motion` ("Last Train to Eden", "Sable Run"), Leaderboard rows 3, 5, 6  
+**Priority:** High  
+**Recommended fix:** Audit all image src URLs for missing or incorrectly pathed assets. Upload the missing thumbnail images to storage. Ensure consistent image URL pattern across all film records.  
+**Acceptance criteria:** All film card thumbnails render a visible image. Zero broken image alt-text fallbacks visible on any page.
+
+---
+
+### TASK 8 — Replace Hardcoded Platform Stats with Real Data
+
+**Issue:** "16K+ Films Uploaded," "3.2K Emerging Creators," "48+ Countries," "4 AI Models" appear to be hardcoded  
+**Page/Location:** Homepage hero stats strip  
+**Priority:** High  
+**Recommended fix:** Create a backend API endpoint or Firestore query that returns real aggregate counts. Fetch these on page load and replace the static values. If the platform is pre-launch and these numbers are targets, add a visual qualifier (e.g., "Goal: 16K") or remove the section until real data exists.  
+**Acceptance criteria:** Stats are fetched dynamically from a data source. The values update as content grows.
+
+---
+
+### TASK 9 — Fix Meta Description Inconsistency
+
+**Issue:** `<meta name="description">` and `<meta property="og:description">` contain different text on the homepage; some inner pages inherit the homepage title  
+**Page/Location:** All pages, `<head>`  
+**Priority:** High  
+**Recommended fix:** Ensure each SPA route dynamically updates both the `<title>`, `<meta name="description">`, `<meta property="og:title">`, `<meta property="og:description">`, and `<link rel="canonical">` tags on route change using React Helmet, Next.js `<Head>`, or equivalent. Consolidate and deduplicate the two homepage descriptions into one.  
+**Acceptance criteria:** Every page has a unique `<title>` and matching `<meta name="description">` / `og:description`. No page inherits another page's SEO tags.
+
+---
+
+### TASK 10 — Implement Auth-Gated Action Feedback
+
+**Issue:** "Save," "Follow," and "Tip" buttons silently do nothing when user is not signed in  
+**Page/Location:** Video detail pages, creator profile pages  
+**Priority:** Medium  
+**Recommended fix:** On click of any authenticated action (Save, Follow, Tip, Like) when user is not signed in, trigger the sign-in modal with a contextual message (e.g., "Sign in to save this film"). This is standard UX for auth-gated platforms.  
+**Acceptance criteria:** Clicking Save, Follow, or Tip when not authenticated opens the sign-in modal. No silent failures.
+
+---
+
+### TASK 11 — Add Custom 404 Page
+
+**Issue:** GitHub Pages default 404 exposes hosting infrastructure  
+**Page/Location:** Any invalid URL  
+**Priority:** Medium  
+**Recommended fix:** Create a branded `404.html` within the repo that displays a Madtape-styled "Page not found" message with links back to the homepage and Explore page. If migrating to Vercel/Netlify, configure a custom 404 route.  
+**Acceptance criteria:** Navigating to an invalid URL returns a Madtape-branded error page. No "GitHub Pages" branding appears.
+
+---
+
+### TASK 12 — Fix Cookie Policy Link in Consent Banner
+
+**Issue:** "Cookie Policy" link inside the consent banner points to `/cookie-policy` which 404s  
+**Page/Location:** Cookie consent banner (appears on homepage and all pages)  
+**Priority:** Critical (compliance)  
+**Recommended fix:** Build the `/cookie-policy` page (see Task 4). Alternatively, as a temporary measure, link to a hosted version of the cookie policy until the SPA routing issue is resolved.  
+**Acceptance criteria:** The Cookie Policy link in the banner opens readable cookie policy content.
+
+---
+
+### TASK 13 — Fix `SearchAction` JSON-LD Conflict with robots.txt
+
+**Issue:** Schema `SearchAction` targets `/search?q=...` but `/search` is disallowed for all crawlers in `robots.txt`  
+**Page/Location:** Homepage `<head>`, `robots.txt`  
+**Priority:** Medium  
+**Recommended fix:** Either remove the `Disallow: /search` rule from `robots.txt` (allowing Google to crawl search result pages), or remove the `SearchAction` from the JSON-LD (abandoning Google Sitelinks Searchbox). The two currently contradict each other.  
+**Acceptance criteria:** The `robots.txt` disallow directives and the JSON-LD `SearchAction` are consistent — either both allow or both disallow the `/search` path.
+
+---
+
+### TASK 14 — Rename OG Image File (Remove Space)
+
+**Issue:** OG image filename contains a URL-encoded space: `panel%201-b5d859a2.png`  
+**Page/Location:** `<meta property="og:image">` in all pages  
+**Priority:** Low  
+**Recommended fix:** Rename the file to `panel-1-b5d859a2.png` and update the meta tag reference.  
+**Acceptance criteria:** OG image URL contains no `%20` characters. Image still resolves correctly with HTTP 200.
+
+---
+
+### TASK 15 — Add Structured Data (VideoObject, Person Schema)
+
+**Issue:** No structured data exists beyond a basic `WebSite` schema on the homepage  
+**Page/Location:** All `/video/[slug]` and `/profile/[creator]` pages  
+**Priority:** Medium  
+**Recommended fix:** Add `VideoObject` JSON-LD on each video detail page with `name`, `description`, `thumbnailUrl`, `uploadDate`, `duration`, and `creator` fields. Add `Person` schema on creator profile pages. This enables rich results in Google Search.  
+**Acceptance criteria:** Google's Rich Results Test validates `VideoObject` on at least one video page and `Person` on at least one creator profile.
+
+---
+
+### TASK 16 — Build the About and Contact Pages
+
+**Issue:** "About" and "Contact" are listed in the footer Company column but the pages do not exist  
+**Page/Location:** Footer → Company → About / Contact  
+**Priority:** Medium  
+**Recommended fix:** Build `/about` as a basic company information page (mission, team, founding, press contact). Build `/contact` as either a simple contact form (connected to a backend email handler) or a mailto link. Remove both items from the footer until the pages exist, or build them.  
+**Acceptance criteria:** `/about` and `/contact` return valid, readable pages with relevant content.
+
+---
+
+### TASK 17 — Implement "Submit Your Trailer" Flow on Trailers Page
+
+**Issue:** "↑ Submit Your Trailer" button has no action  
+**Page/Location:** `/trailers` page, bottom section  
+**Priority:** Low  
+**Recommended fix:** Route this button to the upload page (`/upload`) with a query parameter indicating trailer submission type, or open a submission form modal. If the submission process is manual, link to a contact/submission email.  
+**Acceptance criteria:** Clicking "Submit Your Trailer" navigates to a functional submission destination.

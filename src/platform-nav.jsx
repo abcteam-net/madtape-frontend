@@ -61,12 +61,12 @@ export function PlatformNav({ user, onLogin, onLogout }) {
   };
 
   const links = [
-    ["explore", "Explore"],
-    ["upload", "Publish"],
-    ["workflows", "Workflows"],
-    ["creators", "Creators"],
-    ["pricing", "Pricing"],
-    ["rules", "About"],
+    ["watch", "Watch"],
+    ["submit", "Submit Film"],
+    ["creator-program", "Creator Program"],
+    ["about", "About"],
+    ["founding-team", "Founding Team"],
+    ["early-access", "Early Access"],
   ];
 
   return (
@@ -91,22 +91,25 @@ export function PlatformNav({ user, onLogin, onLogout }) {
       >
         <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 28, display: "block" }} />
       </div>
-      <div style={{ display: "flex", gap: 4 }}>
+      
+      {/* Navigation Links */}
+      <div style={{ display: "flex", gap: 8, marginLeft: "auto" }}>
         {links.map(([key, label]) => {
-          const isActive = page === key || (key === "workflows" && page === "explore");
+          const isActive = page === key;
           return (
             <button 
               key={key} 
-              onClick={() => {
-                if (key === "workflows") navigate("/explore");
-                else navigate(key === "home" ? "/" : "/" + key);
-              }} 
+              onClick={() => navigate("/" + key)} 
               aria-label={`Go to ${label}`}
               style={{
-                background: isActive ? "rgba(255,255,255,0.08)" : "none",
-                border: "none", cursor: "pointer", padding: "7px 12px", borderRadius: 4,
-                fontSize: 13, color: isActive ? "#fff" : "#b3b3b3",
-                fontWeight: isActive ? 600 : 400,
+                background: isActive ? "rgba(229, 9, 20, 0.1)" : "none",
+                border: "none", 
+                cursor: "pointer", 
+                padding: "8px 16px", 
+                borderRadius: 4,
+                fontSize: 13, 
+                color: isActive ? "var(--accent)" : "#b3b3b3",
+                fontWeight: isActive ? 700 : 500,
                 transition: "color 120ms, background 120ms",
               }}
               onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = "#fff"; }}
@@ -115,204 +118,47 @@ export function PlatformNav({ user, onLogin, onLogout }) {
           );
         })}
       </div>
-      <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
-        <div 
-          ref={searchRef}
-          style={{
-            position: "relative",
-            display: "flex", alignItems: "center", gap: 8,
-            border: "1px solid rgba(255,255,255,0.1)", background: "rgba(0,0,0,0.4)",
-            padding: "6px 12px", borderRadius: 4,
-          }}
-        >
-          <span style={{ color: "#777", fontSize: 14 }} aria-hidden="true">⌕</span>
-          <input 
-            placeholder="Search films, creators…" 
-            value={searchQuery}
-            onChange={e => { setSearchQuery(e.target.value); setDropdownOpen(true); }}
-            onKeyDown={handleSearchSubmit}
-            onFocus={() => setDropdownOpen(true)}
-            aria-label="Search films and creators"
-            style={{
-              background: "none", border: "none", outline: "none", color: "#fff",
-              fontFamily: "inherit", fontSize: 13, width: 160,
-            }} 
-          />
-          {searchQuery && (
-            <button 
-              onClick={handleClearSearch}
-              aria-label="Clear search input"
-              style={{ background: "none", border: "none", color: "#777", cursor: "pointer", fontSize: 14, padding: 0 }}
-            >
-              ×
-            </button>
-          )}
-
-          {/* Dropdown Overlay */}
-          {dropdownOpen && searchQuery.trim() && (
-            <div style={{
-              position: "absolute", top: "100%", right: 0, marginTop: 8,
-              width: 320, background: "#141414", border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: 6, boxShadow: "0 12px 40px rgba(0,0,0,0.9)", zIndex: 100,
-              padding: "16px", display: "flex", flexDirection: "column", gap: 16,
-              maxHeight: 380, overflowY: "auto"
-            }}>
-              {matchingCreators.length === 0 && matchingVideos.length === 0 ? (
-                <div style={{ color: "#777", fontSize: 13, textAlign: "center", padding: "10px 0" }}>
-                  No results found for "{searchQuery}"
-                </div>
-              ) : (
-                <>
-                  {matchingCreators.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 8 }}>
-                        Creators
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {matchingCreators.map(c => (
-                          <div 
-                            key={c.id} 
-                            onClick={() => { navigate(`/profile/${c.id}`); setDropdownOpen(false); }}
-                            style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "6px", borderRadius: 4 }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                            role="link"
-                            tabIndex={0}
-                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { navigate(`/profile/${c.id}`); setDropdownOpen(false); } }}
-                          >
-                            <div style={{
-                              width: 24, height: 24, borderRadius: "50%", background: c.color,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              overflow: "hidden"
-                            }}>
-                              <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{c.name}</div>
-                              <div style={{ fontSize: 11, color: "#555" }}>{c.handle}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {matchingVideos.length > 0 && (
-                    <div>
-                      <div style={{ fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase", color: "#555", fontWeight: 700, marginBottom: 8 }}>
-                        Films
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        {matchingVideos.map(v => (
-                          <div 
-                            key={v.id} 
-                            onClick={() => { navigate(`/video/${v.id}`); setDropdownOpen(false); }}
-                            style={{ display: "flex", gap: 8, cursor: "pointer", padding: "6px", borderRadius: 4 }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.04)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-                            role="link"
-                            tabIndex={0}
-                            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { navigate(`/video/${v.id}`); setDropdownOpen(false); } }}
-                          >
-                            <div style={{ width: 44, aspectRatio: "16/9", background: "#222", borderRadius: 2, overflow: "hidden", flexShrink: 0, position: "relative" }}>
-                              {v.panel && <img src={v.panel} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />}
-                            </div>
-                            <div style={{ minWidth: 0 }}>
-                              <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap" }}>{v.title}</div>
-                              <div style={{ fontSize: 11, color: "#555" }}>{(window.CREATORS || []).find(c => c.id === v.creator)?.handle}</div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <button 
-                    onClick={() => { navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`); setDropdownOpen(false); }}
-                    style={{
-                      width: "100%", background: "rgba(255,255,255,0.05)", border: "none", color: "#fff",
-                      fontSize: 12, fontWeight: 700, padding: "8px", borderRadius: 4, cursor: "pointer",
-                      textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)", marginTop: 4
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
-                  >
-                    View all results →
-                  </button>
-                </>
-              )}
-            </div>
-          )}
-        </div>
-        <button onClick={() => navigate("/upload")} aria-label="Upload film" style={{
-          background: "none", border: "1px solid rgba(255,255,255,0.2)",
-          color: "#fff", padding: "7px 14px", borderRadius: 4,
-          fontSize: 13, fontWeight: 600, cursor: "pointer",
-          display: "flex", alignItems: "center", gap: 6,
-        }}>↑ Upload</button>
-        {user ? (
-          <div 
-            style={{
-              width: 34, height: 34, borderRadius: 4,
-              background: "linear-gradient(135deg, #e50914, #8b0000)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", overflow: "hidden",
-            }} 
-            onClick={() => navigate("/dashboard")} 
-            role="link"
-            tabIndex={0}
-            aria-label="Dashboard"
-            onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') navigate("/dashboard"); }}
-            title="Dashboard"
-          >
-            <img src="/icons/profile.svg" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-        ) : (
-          <button onClick={onLogin} aria-label="Sign In" style={{
-            background: "var(--accent)", color: "#fff", padding: "7px 18px",
-            borderRadius: 4, fontWeight: 700, fontSize: 13, border: "none", cursor: "pointer",
-          }}>Sign In</button>
-        )}
-      </div>
     </nav>
   );
 }
 
 export function PlatformFooter() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const page = location.pathname.slice(1) || "home";
   return (
     <footer style={{ padding: "60px 56px 40px", borderTop: "1px solid rgba(255,255,255,0.07)", background: "#0a0a0a" }}>
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 40, marginBottom: 48 }}>
         <div>
           <div style={{ marginBottom: 12, cursor: "pointer" }} onClick={() => navigate("/")}>
-            <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 42, display: "block" }} />
+            <img src="/icons/Logo.svg" alt="MADTAPE" style={{ height: 36, display: "block" }} />
           </div>
-          <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, maxWidth: "28ch" }}>
-            The publishing, workflow, discovery, and creator-support layer for AI-native short-form cinema.
+          <p style={{ fontSize: 13, color: "#777", lineHeight: 1.6, maxWidth: "32ch" }}>
+            The home of short-form AI cinema. Curating the best in cinematic storytelling and emerging filmmaker talent.
           </p>
         </div>
-        {[
-          ["Platform", [["explore","Explore"], ["challenges","Challenges"], ["leaderboard","Leaderboard"], ["creators","Creators"]]],
-          ["Create", [["upload","Upload a Film"], ["generate","Generate with AI"], ["pricing","Pricing"]]],
-          ["Community", [["challenges","This Week's Challenge"], ["leaderboard","Leaderboard"], ["creators","Creator Directory"]]],
-          ["Company", [["rules","Content Rules"], ["about","About"], ["rules","Contact"]]],
-        ].map(([heading, items]) => (
-          <div key={heading}>
-            <div style={{ fontSize: 10, letterSpacing: "0.16em", textTransform: "uppercase", color: "#555", marginBottom: 16, fontWeight: 600 }}>{heading}</div>
-            {items.map(([key, label]) => (
-              <a key={label} href="#" onClick={(e) => { e.preventDefault(); navigate(key === "home" ? "/" : "/" + key); }}
-                style={{ display: "block", fontSize: 13, color: "#777", padding: "4px 0", textDecoration: "none" }}
-                onMouseEnter={e => e.currentTarget.style.color = "#fff"}
-                onMouseLeave={e => e.currentTarget.style.color = "#777"}
-              >{label}</a>
-            ))}
-          </div>
-        ))}
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          {[
+            ["about", "About"],
+            ["founding-team", "Founding Team"],
+            ["submit", "Submit Film"],
+            ["creator-program", "Creator Program"],
+            ["early-access", "Early Access"],
+            ["early-access", "Contact"]
+          ].map(([key, label]) => (
+            <a 
+              key={label} 
+              href="#" 
+              onClick={(e) => { e.preventDefault(); navigate("/" + key); }}
+              style={{ fontSize: 13, color: "#777", fontWeight: 600, textDecoration: "none" }}
+              onMouseEnter={e => e.currentTarget.style.color = "#fff"}
+              onMouseLeave={e => e.currentTarget.style.color = "#777"}
+            >
+              {label}
+            </a>
+          ))}
+        </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#444", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24 }}>
-        <span>© 2026 Madtape AI · Films generated by machines, curated by hand</span>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#444", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, flexWrap: "wrap", gap: 16 }}>
+        <span>© 2026 Madtape AI · Curated short-form cinema</span>
         <span style={{ display: "flex", gap: 12 }}>
           {[
             ["/rules", "Content Rules"],

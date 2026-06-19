@@ -6,6 +6,12 @@ import { UploadPage, GeneratePage, PricingPage, DashboardPage } from './page-cre
 import { ChallengesPage } from './page-challenges.jsx';
 import { ExplorePage } from './page-explore.jsx';
 import { HomePage } from './page-home.jsx';
+import { WatchPage } from './page-watch.jsx';
+import { SubmitPage } from './page-submit.jsx';
+import { CreatorProgramPage } from './page-creator-program.jsx';
+import { EarlyAccessPage } from './page-early-access.jsx';
+import { AboutPage } from './page-about.jsx';
+import { FoundingTeamPage } from './page-founding-team.jsx';
 import { SearchPage } from './page-search.jsx';
 import { RulesPage, PrivacyPage, TermsPage, CookiePolicyPage, DMCAPage } from './page-legal.jsx';
 import { PlatformNav } from './platform-nav.jsx';
@@ -335,6 +341,12 @@ function PlatformApp() {
           "query-input": "required name=search_term_string"
         }
       };
+    } else if (path === "/about") {
+      title = "About Madtape — The Home of Short-Form AI Cinema";
+      desc = "Madtape is building a curated home for short-form AI cinema, starting with Rootsapiens: Omega Valley as its first original proof-of-concept.";
+    } else if (path === "/founding-team") {
+      title = "Founding Team — Madtape";
+      desc = "Meet the founding team behind Madtape, combining product strategy, AI creative direction, cinematic storytelling, cloud infrastructure, and digital transformation.";
     } else if (path === "/explore") {
       title = "Explore Short-Form AI Films — Madtape";
       desc = "Filter, browse, and discover cinematic AI films across Sci-Fi, Horror, Action, Drama, and Experimental categories.";
@@ -563,6 +575,12 @@ function PlatformApp() {
       <main id="main-content">
         <Routes>
           <Route path="/" element={<HomePage user={user} onLogin={login} />} />
+          <Route path="/watch" element={<WatchPage />} />
+          <Route path="/submit" element={<SubmitPage />} />
+          <Route path="/creator-program" element={<CreatorProgramPage />} />
+          <Route path="/early-access" element={<EarlyAccessPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/founding-team" element={<FoundingTeamPage />} />
           <Route path="/trailers" element={<TrailersPage />} />
           <Route path="/real-films" element={<RealAIFilmsPage />} />
           <Route path="/explore" element={<ExplorePage />} />

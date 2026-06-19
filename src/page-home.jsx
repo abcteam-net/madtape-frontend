@@ -1,336 +1,571 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { VideoCard, CreatorCard } from './platform-cards.jsx';
+import { db } from './firebase-config.js';
+import { collection, addDoc } from 'firebase/firestore';
 import { PlatformFooter } from './platform-nav.jsx';
+
+const trackEvent = (eventName, eventData = {}) => {
+  console.log(`[Analytics Event]: ${eventName}`, eventData);
+  if (window.gtag) {
+    window.gtag('event', eventName, eventData);
+  }
+};
 
 export function HomePage({ user, onLogin }) {
   const navigate = useNavigate();
-  const videos = window.VIDEOS || [];
-  const creators = window.CREATORS || [];
-  const challenges = window.CHALLENGES || [];
-  const openChallenge = challenges.find(c => c.status === "open") || challenges[0];
+
+  // Waitlist form state
+  const [waitlistData, setWaitlistData] = React.useState({
+    name: '',
+    email: '',
+    role: 'viewer'
+  });
+  const [loading, setLoading] = React.useState(false);
+  const [submitted, setSubmitted] = React.useState(false);
+  const [error, setError] = React.useState('');
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setWaitlistData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleWaitlistSubmit = async (e) => {
+    e.preventDefault();
+    if (!waitlistData.name || !waitlistData.email) {
+      setError('Please fill in both name and email.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const payload = {
+        ...waitlistData,
+        submittedAt: new Date().toISOString()
+      };
+
+      if (window.isFirebaseConfigured) {
+        await addDoc(collection(db, 'waitlist'), payload);
+      } else {
+        const currentLocal = JSON.parse(localStorage.getItem('madtape_waitlist') || '[]');
+        currentLocal.push(payload);
+        localStorage.setItem('madtape_waitlist', JSON.stringify(currentLocal));
+      }
+
+      trackEvent('waitlist_submit', { role: waitlistData.role, source: 'homepage' });
+      setSubmitted(true);
+    } catch (err) {
+      console.error('Waitlist submit error:', err);
+      setError('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ paddingTop: 0, background: '#0a0a0a', color: '#ffffff' }}>
       
       {/* 1. HERO SECTION */}
       <section style={{
-        minHeight: "90vh", display: "flex", flexDirection: "column", justifyContent: "center",
-        padding: "120px 56px 80px", position: "relative", overflow: "hidden",
+        minHeight: "100vh", 
+        display: "flex", 
+        flexDirection: "column", 
+        justifyContent: "center",
+        padding: "140px 56px 80px", 
+        position: "relative", 
+        overflow: "hidden",
+        borderBottom: "1px solid rgba(255,255,255,0.06)"
       }}>
-        {/* Cinematic Background Grid */}
+        {/* Ambient background glow */}
         <div style={{ position: "absolute", inset: 0, zIndex: 0, overflow: "hidden" }}>
           <div style={{
             position: "absolute", inset: 0,
-            background: "linear-gradient(180deg, rgba(10,10,10,0.0) 0%, rgba(10,10,10,0.85) 60%, #0a0a0a 100%)",
+            background: "linear-gradient(180deg, rgba(10,10,10,0.0) 0%, rgba(10,10,10,0.9) 80%, #0a0a0a 100%)",
             zIndex: 2,
           }} />
           <div style={{
             position: "absolute", inset: 0,
-            background: "radial-gradient(ellipse at 75% 45%, rgba(229,9,20,0.1), transparent 60%)",
+            background: "radial-gradient(ellipse at 80% 40%, rgba(229,9,20,0.12), transparent 60%)",
             zIndex: 1,
           }} />
-          {/* Floating video thumbnails for high-end cinematic feel */}
-          <div style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "50%", display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr 1fr", gap: 4, opacity: 0.5, zIndex: 0 }}>
-            {videos.slice(0, 6).map((v) => (
-              <div key={v.id} style={{ position: "relative", overflow: "hidden", background: "#111" }}>
-                {v.panel && <img src={v.panel} alt={v.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />}
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.8))" }} />
-              </div>
-            ))}
-          </div>
         </div>
 
-        <div style={{ position: "relative", zIndex: 3, maxWidth: 720 }}>
+        <div style={{ position: "relative", zIndex: 3, maxWidth: 840, margin: "0 auto", width: "100%" }}>
           <div style={{ fontSize: 11, letterSpacing: "0.25em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 24, fontWeight: 700 }}>
-            ● NOW OPEN · {openChallenge?.title || "CINEMA CHALLENGES"}
+            ● PRE-LAUNCH ACCESS
           </div>
+          
           <h1 style={{
-            fontFamily: "'Bebas Neue', sans-serif", fontWeight: 400,
-            fontSize: "clamp(54px, 8vw, 110px)", lineHeight: 0.9, letterSpacing: "0.01em",
-            color: "#fff", marginBottom: 28, textWrap: "balance",
+            fontFamily: "'Bebas Neue', sans-serif", 
+            fontWeight: 400,
+            fontSize: "clamp(54px, 8vw, 110px)", 
+            lineHeight: 0.9, 
+            letterSpacing: "0.01em",
+            color: "#fff", 
+            marginBottom: 24,
+            textTransform: "uppercase"
           }}>
-            The platform layer for<br />
-            <span style={{ color: "var(--accent)" }}>AI-Native Cinema.</span>
+            Madtape is the home of<br />
+            <span style={{ color: "var(--accent)" }}>short-form AI cinema.</span>
           </h1>
-          <p style={{ fontSize: 18, lineHeight: 1.5, color: "var(--fg-dim)", maxWidth: "54ch", marginBottom: 40 }}>
-            Publish cinematic AI shorts, share the workflow behind them, build an audience, and receive direct creator support.
+          
+          <p style={{ fontSize: 20, lineHeight: 1.5, color: "var(--fg-dim)", maxWidth: "58ch", marginBottom: 40 }}>
+            Watch cinematic AI films, follow emerging AI filmmakers, and submit your own short film.
           </p>
-          <div style={{ fontSize: 13, color: "#777", marginBottom: 28, fontStyle: "italic" }}>
-            Built for AI-native filmmakers, cinematic storytellers, and experimental creators.
+
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap", marginBottom: 56 }}>
+            <button 
+              onClick={() => {
+                trackEvent('early_access_click', { source: 'hero_primary' });
+                navigate("/watch");
+              }} 
+              style={{
+                background: "var(--accent)", 
+                color: "#fff", 
+                padding: "16px 32px",
+                fontSize: 15, 
+                fontWeight: 700, 
+                borderRadius: 4, 
+                border: "none", 
+                cursor: "pointer",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "#ff1f2f"}
+              onMouseLeave={e => e.currentTarget.style.background = "var(--accent)"}
+            >
+              Watch Rootsapiens Trailer
+            </button>
+            
+            <button 
+              onClick={() => {
+                trackEvent('early_access_click', { source: 'hero_secondary' });
+                navigate("/early-access");
+              }} 
+              style={{
+                background: "rgba(255,255,255,0.08)", 
+                color: "#fff", 
+                padding: "16px 32px",
+                fontSize: 15, 
+                fontWeight: 700, 
+                borderRadius: 4, 
+                border: "1px solid rgba(255,255,255,0.15)", 
+                cursor: "pointer",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
+              onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+            >
+              Join Early Access
+            </button>
+
+            <button 
+              onClick={() => {
+                trackEvent('creator_program_click', { source: 'hero_third' });
+                navigate("/submit");
+              }} 
+              style={{
+                background: "none", 
+                color: "#ccc", 
+                padding: "16px 32px",
+                fontSize: 15, 
+                fontWeight: 600, 
+                borderRadius: 4, 
+                border: "1px solid rgba(255,255,255,0.08)", 
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.2)"; }}
+              onMouseLeave={e => { e.currentTarget.style.color = "#ccc"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+            >
+              Submit Your AI Short Film
+            </button>
           </div>
-          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
-            <button onClick={() => navigate("/upload")} style={{
-              background: "#fff", color: "#000", padding: "14px 28px",
-              fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
-            }}>Publish Your Film</button>
-            <button onClick={() => navigate("/explore")} style={{
-              background: "rgba(109,109,110,0.4)", color: "#fff", padding: "14px 28px",
-              fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer",
-            }}>Explore AI Cinema</button>
+
+          {/* Embedded YouTube Trailer directly in Hero */}
+          <div style={{ marginTop: 24 }}>
+            <div style={{ fontSize: 12, letterSpacing: "0.1em", textTransform: "uppercase", color: "#666", marginBottom: 12, fontWeight: 700 }}>
+              Madtape Original No. 001 · Rootsapiens: Omega Valley · Season 1, Episode 1 Trailer
+            </div>
+            
+            <div style={{ 
+              position: "relative", 
+              width: "100%", 
+              aspectRatio: "16/9", 
+              background: "#000", 
+              borderRadius: 6, 
+              overflow: "hidden", 
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.8)"
+            }}>
+              <iframe
+                src="https://www.youtube.com/embed/YuwL3zfhNtc"
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", border: "none" }}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title="Rootsapiens Trailer"
+              />
+            </div>
+            
+            <p style={{ fontSize: 14, color: "#888", lineHeight: 1.5, marginTop: 16, maxWidth: "70ch" }}>
+              On Omega Island, a forgotten mountain begins to change the village, the animals, and the people who get too close. Rootsapiens is the first Madtape Original and the proof-of-concept for AI-native short-form cinema.
+            </p>
           </div>
+
         </div>
       </section>
 
-      {/* 2. THE PROBLEM SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
+      {/* 2. FEATURED ORIGINAL */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0d0d0d" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
           <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-            THE FRAGMENTED ECOSYSTEM
+            Featured Madtape Original
           </div>
-          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 40, letterSpacing: "0.01em" }}>
-            AI video is exploding. The ecosystem around it is fragmented.
-          </h2>
-          <p style={{ fontSize: 18, color: "var(--fg-dim)", marginBottom: 40 }}>
-            Creators can generate stunning cinematic clips, but they still lack:
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 50 }}>
-            {[
-              { title: "A Dedicated Home", desc: "No central platform built for AI-native short films, pilots, episodes, and cinematic IP." },
-              { title: "Audience Validation", desc: "No way to prove genuine audience interest and demand before spending resources on longer production." },
-              { title: "Monetization Paths", desc: "Lack of direct backing beyond scattered ad platforms, tips, and external hubs." },
-              { title: "Production Knowledge", desc: "No transparent library of real generation parameters and production workflow steps." }
-            ].map((p, i) => (
-              <div key={i} style={{ padding: 24, background: "#141414", border: "1px solid #222", borderRadius: 4 }}>
-                <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>{p.title}</div>
-                <div style={{ fontSize: 14, color: "#888", lineHeight: 1.5 }}>{p.desc}</div>
-              </div>
-            ))}
-          </div>
-          <div style={{ fontSize: 20, fontWeight: 600, color: "#fff", borderLeft: "3px solid var(--accent)", paddingLeft: 16 }}>
-            The problem is not making AI video. The problem is turning AI video into audience-tested stories.
-          </div>
-        </div>
-      </section>
-
-      {/* 3. PRODUCT LOOP SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-            THE LIFECYCLE
-          </div>
-          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 48, letterSpacing: "0.01em" }}>
-            From AI clip to audience-tested IP.
-          </h2>
-          <div style={{ position: "relative" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 24 }}>
-              {[
-                { step: "01", title: "Publish Short", desc: "Creator publishes a cinematic short on the platform." },
-                { step: "02", title: "Attach Workflow", desc: "Creator attaches detailed tool, cost, prompt, and version metadata." },
-                { step: "03", title: "Discovery", desc: "Viewers discover the film in a curated, high-fidelity discovery feed." },
-                { step: "04", title: "Learn & Follow", desc: "Viewers analyze production steps and follow their favorite creators." },
-                { step: "05", title: "Direct Support", desc: "Audience backers support creators directly with direct backing." },
-                { step: "06", title: "Validate IP", desc: "Validated projects transition to reward-based episode or pilot campaigns." },
-                { step: "07", title: "Expand", desc: "Creators produce and publish next parts back into the Madtape feed." }
-              ].map((s, i) => (
-                <div key={i} style={{ padding: 20, background: "#111", border: "1px solid #1f1f1f", borderRadius: 4, position: "relative" }}>
-                  <div style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 48, color: "rgba(229,9,20,0.15)", marginBottom: 8 }}>{s.step}</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 8 }}>{s.title}</div>
-                  <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>{s.desc}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 4. WORKFLOW TRANSPARENCY SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
-          <div>
-            <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-              PRODUCTION METADATA
-            </div>
-            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
-              Every film has a workflow.
-            </h2>
-            <p style={{ fontSize: 18, color: "#fff", fontWeight: 500, marginBottom: 20 }}>
-              Madtape turns AI cinema from passive viewing into a transparent production knowledge layer.
-            </p>
-            <p style={{ fontSize: 14, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 28 }}>
-              Each published film can carry its production metadata: tools, models, prompts, steps, time, cost, versions, and creator notes. The more creators publish workflows, the stronger the learning network becomes.
-            </p>
-            <button onClick={() => navigate("/explore")} style={{
-              background: "none", color: "#fff", padding: "12px 24px",
-              fontSize: 14, fontWeight: 600, borderRadius: 4, border: "1px solid rgba(255,255,255,0.3)",
-              cursor: "pointer",
-            }}>View Published Workflows</button>
-          </div>
-          <div style={{ background: "#141414", border: "1px solid #222", padding: 32, borderRadius: 8 }}>
-            <div style={{ fontSize: 12, color: "#777", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 16 }}>Workflow Metadata HUD Preview</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, fontSize: 13 }}>
-              {[
-                ["AI Model", "Seedance 2.0 (Dynamic)"],
-                ["Total Renders", "45 scene attempts"],
-                ["Generation Cost", "Estimated €4.50"],
-                ["Tools Used", "Seedance, Kling, Luma"],
-                ["Duration", "15 Seconds"],
-                ["Creator Notes", "Custom camera pathing via prompt weights"]
-              ].map(([k, v]) => (
-                <div key={k} style={{ borderBottom: "1px solid #222", paddingBottom: 8 }}>
-                  <div style={{ color: "#777", fontSize: 11, marginBottom: 4 }}>{k}</div>
-                  <div style={{ color: "#fff", fontWeight: 600 }}>{v}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 5. CREATOR SUPPORT SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center" }}>
-          <div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-              {creators.slice(0, 4).map(c => (
-                <CreatorCard key={c.id} creator={c} onOpen={() => navigate("/profile/" + c.id)} />
-              ))}
-            </div>
-          </div>
-          <div>
-            <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-              CREATOR REVENUE
-            </div>
-            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
-              Direct Creator Support.
-            </h2>
-            <p style={{ fontSize: 16, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 24 }}>
-              Supporters can directly back their favorite filmmakers on the platform. Madtape uses a community-first split to keep creators sustainable.
-            </p>
-            <div style={{ background: "#111", border: "1px solid #1f1f1f", padding: 24, borderRadius: 4, marginBottom: 24 }}>
-              <div style={{ fontSize: 24, fontFamily: "'Bebas Neue', sans-serif", color: "#fff", marginBottom: 8 }}>95% / 5% Platform Fee Split</div>
-              <div style={{ fontSize: 13, color: "#888", lineHeight: 1.5 }}>
-                Creators receive 95% of the platform support split. Madtape takes a clearly disclosed 5% platform fee. Payment processing fees, refunds, taxes, and legal deductions may apply.
-              </div>
-            </div>
-            <div style={{ fontSize: 12, color: "#777" }}>
-              * Payments are currently disabled during the beta preview.
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. PUBLISHING PLANS SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a", background: "#0d0d0d" }}>
-        <div style={{ maxWidth: 1000, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-              MEMBERSHIPS
-            </div>
-            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 18, letterSpacing: "0.01em" }}>
-              Creator Publishing Plans
-            </h2>
-            <p style={{ fontSize: 15, color: "#888" }}>
-              Decoupling hosting and publishing from cloud compute costs.
-            </p>
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 24 }}>
-            {[
-              {
-                title: "Free",
-                price: "$0",
-                features: ["Publish up to 5 films per month", "Public creator profile", "Workflow pages", "Community feed access"]
-              },
-              {
-                title: "Creator",
-                price: "$15",
-                features: ["Publish up to 20 films per month", "Basic analytics", "Creator badge", "Workflow library", "Priority visibility in selected areas"]
-              },
-              {
-                title: "Pro",
-                price: "$39",
-                popular: true,
-                features: ["Unlimited publishing uploads", "Advanced analytics", "Challenge priority", "Priority support", "Early access to creator-support tools"]
-              }
-            ].map((plan, i) => (
-              <div key={i} style={{
-                padding: 32, background: "#141414", border: plan.popular ? "1px solid var(--accent)" : "1px solid #222",
-                borderRadius: 8, display: "flex", flexDirection: "column", justifyContent: "space-between", position: "relative"
-              }}>
-                {plan.popular && (
-                  <div style={{
-                    position: "absolute", top: 12, right: 12, background: "var(--accent)", color: "#fff",
-                    fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 2, textTransform: "uppercase"
-                  }}>Popular</div>
-                )}
-                <div>
-                  <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>{plan.title}</div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 24 }}>
-                    <span style={{ fontSize: 36, fontFamily: "'Bebas Neue', sans-serif", color: "#fff" }}>{plan.price}</span>
-                    <span style={{ fontSize: 12, color: "#777" }}>/month</span>
-                  </div>
-                  <ul style={{ paddingLeft: 0, listStyle: "none", display: "grid", gap: 10 }}>
-                    {plan.features.map((f, fi) => (
-                      <li key={fi} style={{ fontSize: 13, color: "#bbb", display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ color: "var(--accent)" }}>✓</span> {f}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                <button onClick={() => navigate("/pricing")} style={{
-                  width: "100%", padding: "10px 0", marginTop: 24, borderRadius: 4,
-                  border: plan.popular ? "none" : "1px solid rgba(255,255,255,0.2)",
-                  background: plan.popular ? "var(--accent)" : "none",
-                  color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer"
-                }}>
-                  View Pricing
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 7. OPTIONAL GENERATION SECTION */}
-      <section style={{ padding: "100px 56px", borderTop: "1px solid #1a1a1a" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-            COMPUTE PLATFORM
-          </div>
+          
           <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
-            Optional Generation Toolkit
+            Rootsapiens: Omega Valley
           </h2>
-          <p style={{ fontSize: 16, color: "#fff", fontWeight: 500, marginBottom: 18 }}>
-            Generation is not the core product.
+          
+          <p style={{ fontSize: 18, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 32 }}>
+            A cinematic AI-generated mystery series set on Omega Island, where disappearing animals, living roots, and a sealed mountain cave expose something older than the village itself.
           </p>
-          <p style={{ fontSize: 14, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 24 }}>
-            Madtape may offer optional generation tools for creators who want to render, extend, upscale, retry, or test scenes inside the platform. Generation will be priced by real compute usage. No unlimited compute. No hidden credit traps. No below-cost renders.
-          </p>
-          <div style={{ display: "inline-block", background: "rgba(229,9,20,0.06)", border: "1px solid rgba(229,9,20,0.2)", padding: "16px 24px", borderRadius: 4, fontSize: 13, color: "var(--accent)" }}>
-            * Coming in future releases · Pricing will adapt to provider costs.
+
+          <button 
+            onClick={() => navigate("/watch")} 
+            style={{
+              background: "#fff", 
+              color: "#000", 
+              padding: "14px 28px",
+              fontSize: 15, 
+              fontWeight: 700, 
+              borderRadius: 4, 
+              border: "none", 
+              cursor: "pointer",
+              transition: "opacity 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 0.9}
+            onMouseLeave={e => e.currentTarget.style.opacity = 1}
+          >
+            Watch Trailer
+          </button>
+        </div>
+      </section>
+
+      {/* 3. WHY MADTAPE EXISTS */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            The Wedge
           </div>
-        </div>
-      </section>
-
-      {/* 8. BETA / PAYMENT NOTICE */}
-      <section style={{ padding: "80px 56px", borderTop: "1px solid #1a1a1a", background: "rgba(229,9,20,0.02)" }}>
-        <div style={{ maxWidth: 800, margin: "0 auto", textAlign: "center" }}>
-          <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Payments are coming soon</div>
-          <p style={{ fontSize: 14, color: "var(--fg-dim)", lineHeight: 1.6, maxWidth: "60ch", margin: "0 auto" }}>
-            Real Stripe Checkout transactions are disabled during this beta preview. You can explore the product, publish test content, and review workflows, but no real payment will be processed yet.
+          
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
+            AI films are being created everywhere. They have no real home yet.
+          </h2>
+          
+          <p style={{ fontSize: 16, color: "var(--fg-dim)", lineHeight: 1.6 }}>
+            AI video tools are exploding, but distribution is fragmented. Madtape gives short-form AI cinema a dedicated place to be discovered, curated, watched, and followed.
           </p>
         </div>
       </section>
 
-      {/* 9. FINAL CTA SECTION */}
-      <section style={{ padding: "100px 56px", textAlign: "center", borderTop: "1px solid #1a1a1a" }}>
-        <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
-          JOIN THE FUTURE OF FILM
+      {/* 4. FOR VIEWERS */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0d0d0d" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            For Viewers
+          </div>
+          
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 32, letterSpacing: "0.01em" }}>
+            Watch AI-native short films before they become a new industry.
+          </h2>
+
+          <div style={{ display: "grid", gap: 16, marginBottom: 40 }}>
+            {[
+              "Discover cinematic AI shorts.",
+              "Follow new AI filmmakers.",
+              "Watch original worlds built for short-form storytelling.",
+              "Join early access before the public launch."
+            ].map((bullet, idx) => (
+              <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 16, color: "var(--fg-dim)" }}>
+                <span style={{ color: "var(--accent)", fontWeight: "bold" }}>●</span>
+                <span>{bullet}</span>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => navigate("/early-access")} 
+            style={{
+              background: "var(--accent)", 
+              color: "#fff", 
+              padding: "14px 28px",
+              fontSize: 15, 
+              fontWeight: 700, 
+              borderRadius: 4, 
+              border: "none", 
+              cursor: "pointer",
+              transition: "background 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#ff1f2f"}
+            onMouseLeave={e => e.currentTarget.style.background = "var(--accent)"}
+          >
+            Join Early Access
+          </button>
         </div>
-        <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 72, lineHeight: 0.95, marginBottom: 24, letterSpacing: "0.01em" }}>
-          Together, let's shape<br />
-          <span style={{ color: "var(--accent)" }}>the future of film.</span>
-        </h2>
-        <p style={{ fontSize: 16, color: "var(--fg-dim)", marginBottom: 36, maxWidth: "50ch", margin: "0 auto 36px", lineHeight: 1.55 }}>
-          A unique opportunity for filmmakers to present their work, build a professional community, and share workflows.
-        </p>
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", flexWrap: "wrap" }}>
-          <button onClick={() => navigate("/upload")} style={{ background: "#fff", color: "#000", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>
-            Publish Your Film
+      </section>
+
+      {/* 5. FOR CREATORS */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            For Creators
+          </div>
+          
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
+            Submit your AI short film.
+          </h2>
+
+          <p style={{ fontSize: 18, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 32 }}>
+            We are selecting the first 100 AI filmmakers to feature in the Madtape early access launch.
+          </p>
+
+          <div style={{ display: "grid", gap: 16, marginBottom: 40 }}>
+            {[
+              "30 seconds to 3 minutes.",
+              "AI-generated or AI-assisted.",
+              "Story-driven, not only visual experiments.",
+              "Creator keeps ownership.",
+              "Selected films may be featured in the early Madtape launch."
+            ].map((req, idx) => (
+              <div key={idx} style={{ display: "flex", gap: 12, alignItems: "center", fontSize: 16, color: "var(--fg-dim)" }}>
+                <span style={{ color: "var(--accent)", fontWeight: "bold" }}>✔</span>
+                <span>{req}</span>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => navigate("/submit")} 
+            style={{
+              background: "#fff", 
+              color: "#000", 
+              padding: "14px 28px",
+              fontSize: 15, 
+              fontWeight: 700, 
+              borderRadius: 4, 
+              border: "none", 
+              cursor: "pointer",
+              transition: "opacity 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = 0.9}
+            onMouseLeave={e => e.currentTarget.style.opacity = 1}
+          >
+            Submit Your Film
           </button>
-          <button onClick={() => navigate("/explore")} style={{ background: "rgba(109,109,110,0.4)", color: "#fff", padding: "14px 32px", fontSize: 15, fontWeight: 700, borderRadius: 4, border: "none", cursor: "pointer" }}>
-            Explore AI Cinema
+        </div>
+      </section>
+
+      {/* 6. FIRST 100 AI FILMMAKERS CAMPAIGN */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "#0d0d0d" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            Campaign Spotlight
+          </div>
+          
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
+            We are selecting the first 100 AI filmmakers.
+          </h2>
+
+          <p style={{ fontSize: 16, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 32 }}>
+            Madtape is opening its early launch to filmmakers creating cinematic, story-driven AI shorts. Selected creators will be featured on the platform and may be included in future screenings, launch campaigns, and creator spotlights.
+          </p>
+
+          <button 
+            onClick={() => navigate("/creator-program")} 
+            style={{
+              background: "rgba(255,255,255,0.08)", 
+              color: "#fff", 
+              padding: "14px 28px",
+              fontSize: 15, 
+              fontWeight: 700, 
+              borderRadius: 4, 
+              border: "1px solid rgba(255,255,255,0.15)", 
+              cursor: "pointer",
+              transition: "background 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
+            onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+          >
+            Apply as a Creator
           </button>
+        </div>
+      </section>
+
+      {/* 7. COMMUNITY / SCREENING */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            Madtape Screenings
+          </div>
+          
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
+            Madtape Night 001
+          </h2>
+
+          <p style={{ fontSize: 16, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 32 }}>
+            A future online screening for AI short films, creator showcases, and the first public preview of the Madtape cinematic universe. (Coming Soon)
+          </p>
+
+          <button 
+            onClick={() => navigate("/early-access")} 
+            style={{
+              background: "var(--accent)", 
+              color: "#fff", 
+              padding: "14px 28px",
+              fontSize: 15, 
+              fontWeight: 700, 
+              borderRadius: 4, 
+              border: "none", 
+              cursor: "pointer",
+              transition: "background 0.2s"
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = "#ff1f2f"}
+            onMouseLeave={e => e.currentTarget.style.background = "var(--accent)"}
+          >
+            Get Invited
+          </button>
+        </div>
+      </section>
+
+      {/* 8. WAITLIST */}
+      <section style={{ padding: "100px 56px", background: "rgba(229, 9, 20, 0.02)" }}>
+        <div style={{ maxWidth: 600, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 12, fontWeight: 700 }}>
+              Join Waitlist
+            </div>
+            <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 16 }}>
+              Get early access to Madtape.
+            </h2>
+          </div>
+
+          {submitted ? (
+            <div style={{ 
+              background: "rgba(70, 211, 105, 0.08)", 
+              border: "1px solid rgba(70, 211, 105, 0.3)", 
+              borderRadius: 6, 
+              padding: "32px 24px",
+              textAlign: "center",
+              animation: "fadeIn 400ms ease both"
+            }}>
+              <span style={{ fontSize: 36, display: "block", marginBottom: 12 }}>✉</span>
+              <p style={{ fontSize: 15, lineHeight: 1.5, color: "#fff", fontWeight: 600 }}>
+                You are on the early access list. We will notify you when the first Madtape screening opens.
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleWaitlistSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {error && (
+                <div style={{ background: "rgba(229, 9, 20, 0.1)", border: "1px solid rgba(229, 9, 20, 0.3)", borderRadius: 4, padding: "10px 12px", color: "#ff4d4d", fontSize: 13 }}>
+                  ⚠️ {error}
+                </div>
+              )}
+              
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label htmlFor="hp_name" style={{ fontSize: 11, color: "#aaa", fontWeight: 600 }}>Name</label>
+                <input
+                  type="text"
+                  id="hp_name"
+                  name="name"
+                  value={waitlistData.name}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="John Doe"
+                  style={{
+                    background: "#141414",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 4,
+                    padding: "12px 14px",
+                    color: "#fff",
+                    outline: "none",
+                    fontSize: 14
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label htmlFor="hp_email" style={{ fontSize: 11, color: "#aaa", fontWeight: 600 }}>Email</label>
+                <input
+                  type="email"
+                  id="hp_email"
+                  name="email"
+                  value={waitlistData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="john@example.com"
+                  style={{
+                    background: "#141414",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 4,
+                    padding: "12px 14px",
+                    color: "#fff",
+                    outline: "none",
+                    fontSize: 14
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <label htmlFor="hp_role" style={{ fontSize: 11, color: "#aaa", fontWeight: 600 }}>I am a...</label>
+                <select
+                  id="hp_role"
+                  name="role"
+                  value={waitlistData.role}
+                  onChange={handleInputChange}
+                  style={{
+                    background: "#141414",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    borderRadius: 4,
+                    padding: "12px 14px",
+                    color: "#fff",
+                    outline: "none",
+                    fontSize: 14,
+                    cursor: "pointer"
+                  }}
+                >
+                  <option value="viewer">Viewer who wants to watch AI short films</option>
+                  <option value="creator">AI Filmmaker who wants to submit films</option>
+                  <option value="investor">Early Supporter / Investor / Accelerator</option>
+                  <option value="press">Press / Media Representative</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  background: loading ? "#777" : "var(--accent)",
+                  color: "#fff",
+                  padding: "14px",
+                  fontSize: 15,
+                  fontWeight: 700,
+                  borderRadius: 4,
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  marginTop: 8,
+                  transition: "background 0.2s"
+                }}
+                onMouseEnter={e => { if(!loading) e.currentTarget.style.background = "#ff1f2f"; }}
+                onMouseLeave={e => { if(!loading) e.currentTarget.style.background = "var(--accent)"; }}
+              >
+                {loading ? "Joining Waitlist..." : "Join Early Access"}
+              </button>
+            </form>
+          )}
         </div>
       </section>
 
