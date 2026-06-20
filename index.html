@@ -59,10 +59,12 @@
   --warn: #f5c518;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, span, p, div, a, label, option {
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif !important;
+}
 html, body {
   background: var(--bg);
   color: var(--fg);
-  font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   font-size: 14px;
   line-height: 1.5;
@@ -106,7 +108,7 @@ div:hover .play-overlay { opacity: 1 !important; }
 /* select / input base resets */
 select, input, textarea {
   color-scheme: dark;
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
 }
 
 /* focus visible ring */

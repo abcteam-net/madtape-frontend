@@ -1,0 +1,91 @@
+Use this as a 3-part 30-second ad structure for Madtape. Each part is designed as a separate 10-second generation.
+
+Core style for all 3 clips
+
+Use this same style in every generation so the final edit feels unified:
+
+Style direction: premium cinematic ad, dark background, high contrast, glassmorphic interface elements, red accent lighting, sleek typography, modern AI-film atmosphere, emotional but sharp, fast clean editing, subtle camera motion, professional startup trailer, 16:9, realistic motion, not cartoonish, not cheesy, no clutter, no random extra text, visually polished, high-end tech-meets-cinema aesthetic.
+
+VIDEO 1 — HOOK / THE PROBLEM
+
+Goal: position the problem and create intrigue.
+
+Prompt 1
+
+Create a 10-second cinematic promo video for Madtape.
+Show a dark, premium, high-contrast world of modern filmmaking and AI creation. Open with quick, moody shots: a creator alone in front of glowing screens, hands editing a film timeline, AI-generated cinematic shots flashing on monitors, a film script, a trailer playing, and social feeds moving too fast to notice great work. Show the feeling that powerful short-form AI films exist, but they have no real home. Include elegant UI-like overlays and subtle red accent light. End with a clean reveal of the phrase: “Short-form AI cinema deserves its own home.” Then reveal the brand name MADTAPE in a sharp cinematic title card. Smooth camera motion, premium startup ad feel, emotionally charged, visually clean.
+
+On-screen text
+Great AI films are being made.
+But they are scattered.
+Short-form AI cinema deserves its own home.
+MADTAPE
+Voiceover
+
+“AI is changing filmmaking. But great short-form AI cinema is still scattered, buried, and overlooked. It needs a home.”
+
+VIDEO 2 — THE PLATFORM
+
+Goal: show what Madtape does.
+
+Prompt 2
+
+Create a 10-second cinematic product promo for Madtape.
+Show Madtape as a premium pre-launch platform for short-form AI cinema. Use a sleek dark interface with glassmorphic panels and red accents. Show a user landing on the homepage, watching the Rootsapiens trailer, scrolling through a curated watch page, clicking Join Early Access, and another creator clicking Submit Film. Show elegant visual emphasis on three actions: Watch. Join. Submit. Include subtle glimpses of a featured original, a creator submission flow, and a waitlist form. Make the interface feel real, cinematic, and desirable, not generic SaaS. End with the message: “For viewers. For creators. For the future of AI cinema.”
+
+On-screen text
+Watch the flagship original
+Join early access
+Submit your AI short film
+For viewers. For creators. For the future of AI cinema.
+Voiceover
+
+“Madtape is a new platform built for AI-native cinema. Watch originals, join early access, and submit your own short film.”
+
+VIDEO 3 — MOVEMENT / CTA
+
+Goal: make it feel like a movement and end with a strong CTA.
+
+Prompt 3
+
+Create a 10-second cinematic closing ad for Madtape.
+Show a premium montage of AI filmmakers, cinematic frames, audience reactions, creators uploading work, and a bold digital campaign reveal. Feature the message “First 100 AI Filmmakers” as a major visual moment. Show clean typography stating “Creators keep 100% ownership” and “Non-exclusive showcase platform” in a premium way. Build momentum with strong elegant cuts and a feeling of a movement beginning now. End with a sharp final CTA card on a dark background with red highlights: “Join the movement.” “Watch. Submit. Get early access.” “madtape.com”
+
+On-screen text
+First 100 AI Filmmakers
+Creators keep 100% ownership
+Join the movement
+Watch. Submit. Get early access.
+madtape.com
+Voiceover
+
+“This is not just another tool. It is a launchpad for a new generation of filmmakers. Madtape. Watch. Submit. Join early access.”
+
+Full 30-second voiceover combined
+
+Use this if you want one unified narration:
+
+“AI is changing filmmaking. But great short-form AI cinema is still scattered, buried, and overlooked. It needs a home.
+Madtape is a new platform built for AI-native cinema. Watch originals, join early access, and submit your own short film.
+This is not just another tool. It is a launchpad for a new generation of filmmakers. Madtape. Watch. Submit. Join early access.”
+
+Editing order
+
+Clip 1: problem and brand introduction
+Clip 2: platform and product actions
+Clip 3: movement and CTA
+
+Music direction
+
+Use:
+
+dark cinematic pulse
+modern trailer percussion
+subtle synth bass
+emotional rise in clip 3
+final impact hit on “Madtape”
+Final end card text
+
+MADTAPE
+The home of short-form AI cinema
+madtape.com

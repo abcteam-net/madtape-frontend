@@ -623,7 +623,7 @@ function PlatformApp() {
           onMouseEnter={e => { e.currentTarget.style.background = "var(--accent)"; e.currentTarget.style.transform = "scale(1.1)"; }}
           onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,255,255,0.06)"; e.currentTarget.style.transform = "scale(1)"; }}
         >
-          🍪
+          <img src="/icons/cookies.svg" alt="Cookies" style={{ width: 20, height: 20 }} />
         </button>
       )}
     </div>
@@ -670,7 +670,10 @@ function CookieBanner({ forceOpen, onClose, onConsentChange }) {
       }}>
         <div style={{ flex: 1, minWidth: 280 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#fff", fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
-            <span>🍪 Cookie Settings</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <img src="/icons/cookies.svg" alt="" style={{ width: 16, height: 16 }} />
+              Cookie Settings
+            </span>
           </div>
           <p style={{ color: "#aaa", fontSize: 12, lineHeight: 1.5, margin: 0, textAlign: "left" }}>
             We use necessary cookies for Firebase authentication sessions and secure transactions. We also use optional analytical cookies (Cloudflare Web Analytics) to aggregate performance metrics. You can read our full <Link to="/cookie-policy" style={{ color: "var(--accent)", textDecoration: "underline" }}>Cookie Policy</Link> to learn more.
