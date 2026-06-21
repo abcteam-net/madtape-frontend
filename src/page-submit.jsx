@@ -55,6 +55,7 @@ export function SubmitPage() {
         submittedAt: new Date().toISOString()
       };
 
+      // Save to Firebase / localStorage
       if (window.isFirebaseConfigured) {
         await addDoc(collection(db, 'submissions'), submissionPayload);
       } else {
@@ -62,6 +63,43 @@ export function SubmitPage() {
         const currentLocal = JSON.parse(localStorage.getItem('madtape_submissions') || '[]');
         currentLocal.push(submissionPayload);
         localStorage.setItem('madtape_submissions', JSON.stringify(currentLocal));
+      }
+
+      // Send email notification via Web3Forms
+      try {
+        const web3Response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            access_key: import.meta.env.VITE_WEB3FORMS_KEY || 'f9b499af-50ba-4dd9-a586-11b04e042ae2',
+            subject: `[Madtape] New Film Submission — ${formData.filmTitle}`,
+            from_name: 'Madtape Film Submissions',
+            replyto: formData.email,
+            name: formData.creatorName,
+            email: formData.email,
+            message: [
+              `New film submission received:`,
+              ``,
+              `Creator: ${formData.creatorName}`,
+              `Email: ${formData.email}`,
+              `Film Title: ${formData.filmTitle}`,
+              `Film Link: ${formData.filmLink}`,
+              `Runtime: ${formData.runtime}`,
+              `Tools Used: ${formData.toolsUsed}`,
+              `Synopsis: ${formData.synopsis}`,
+              `Owns Rights: ${formData.ownsRights ? 'Yes' : 'No'}`,
+              `Permission to Feature: ${formData.permissionToFeature ? 'Yes' : 'No'}`,
+              `Submitted At: ${new Date().toLocaleString()}`
+            ].join('\n')
+          })
+        });
+        const web3Data = await web3Response.json();
+        if (!web3Data.success) {
+          console.warn('Web3Forms warning:', web3Data.message);
+        }
+      } catch (emailErr) {
+        // Email is best-effort; don't block the user experience
+        console.warn('Email notification failed (non-blocking):', emailErr);
       }
 
       trackEvent('film_submit', { title: formData.filmTitle });

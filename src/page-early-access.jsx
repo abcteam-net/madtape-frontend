@@ -44,6 +44,7 @@ export function EarlyAccessPage() {
         submittedAt: new Date().toISOString()
       };
 
+      // Save to Firebase / localStorage
       if (window.isFirebaseConfigured) {
         await addDoc(collection(db, 'waitlist'), waitlistPayload);
       } else {
@@ -51,6 +52,31 @@ export function EarlyAccessPage() {
         const currentLocal = JSON.parse(localStorage.getItem('madtape_waitlist') || '[]');
         currentLocal.push(waitlistPayload);
         localStorage.setItem('madtape_waitlist', JSON.stringify(currentLocal));
+      }
+
+      // Send email notification via Web3Forms
+      try {
+        const web3Response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            access_key: import.meta.env.VITE_WEB3FORMS_KEY || 'f9b499af-50ba-4dd9-a586-11b04e042ae2',
+            subject: `[Madtape] New Early Access Signup — ${formData.name}`,
+            from_name: 'Madtape Waitlist',
+            replyto: formData.email,
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+            message: `New early access signup received:\n\nName: ${formData.name}\nEmail: ${formData.email}\nRole: ${formData.role}\nTime: ${new Date().toLocaleString()}`
+          })
+        });
+        const web3Data = await web3Response.json();
+        if (!web3Data.success) {
+          console.warn('Web3Forms warning:', web3Data.message);
+        }
+      } catch (emailErr) {
+        // Email is best-effort; don't block the user experience
+        console.warn('Email notification failed (non-blocking):', emailErr);
       }
 
       trackEvent('waitlist_submit', { role: formData.role });
