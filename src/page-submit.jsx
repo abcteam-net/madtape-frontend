@@ -55,17 +55,7 @@ export function SubmitPage() {
         submittedAt: new Date().toISOString()
       };
 
-      // Save to Firebase / localStorage
-      if (window.isFirebaseConfigured) {
-        await addDoc(collection(db, 'submissions'), submissionPayload);
-      } else {
-        // Fallback for Demo Mode
-        const currentLocal = JSON.parse(localStorage.getItem('madtape_submissions') || '[]');
-        currentLocal.push(submissionPayload);
-        localStorage.setItem('madtape_submissions', JSON.stringify(currentLocal));
-      }
-
-      // Send email notification via Web3Forms
+      // 1. Send email via Web3Forms FIRST — always fires regardless of Firebase state
       try {
         const web3Response = await fetch('https://api.web3forms.com/submit', {
           method: 'POST',
@@ -98,8 +88,23 @@ export function SubmitPage() {
           console.warn('Web3Forms warning:', web3Data.message);
         }
       } catch (emailErr) {
-        // Email is best-effort; don't block the user experience
         console.warn('Email notification failed (non-blocking):', emailErr);
+      }
+
+      // 2. Save to Firebase with a 5s timeout, fall back to localStorage if it fails
+      try {
+        const firestoreTimeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Firestore timeout')), 5000)
+        );
+        await Promise.race([
+          addDoc(collection(db, 'submissions'), submissionPayload),
+          firestoreTimeout
+        ]);
+      } catch (dbErr) {
+        console.warn('Firestore unavailable, saving locally:', dbErr.message);
+        const currentLocal = JSON.parse(localStorage.getItem('madtape_submissions') || '[]');
+        currentLocal.push(submissionPayload);
+        localStorage.setItem('madtape_submissions', JSON.stringify(currentLocal));
       }
 
       trackEvent('film_submit', { title: formData.filmTitle });
