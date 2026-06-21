@@ -67,6 +67,10 @@ export function SubmitPage() {
             replyto: formData.email,
             name: formData.creatorName,
             email: formData.email,
+            film_title: formData.filmTitle,
+            film_link: formData.filmLink,
+            runtime: formData.runtime,
+            tools_used: formData.toolsUsed,
             message: [
               `New film submission received:`,
               ``,

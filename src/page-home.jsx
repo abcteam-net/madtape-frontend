@@ -48,9 +48,39 @@ export function HomePage({ user, onLogin }) {
         submittedAt: new Date().toISOString()
       };
 
-      if (window.isFirebaseConfigured) {
-        await addDoc(collection(db, 'waitlist'), payload);
-      } else {
+      // 1. Send email via Web3Forms FIRST
+      try {
+        const web3Response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            access_key: import.meta.env.VITE_WEB3FORMS_KEY || 'f9b499af-50ba-4dd9-a586-11b04e042ae2',
+            subject: `[Madtape] New Waitlist Signup — ${waitlistData.name}`,
+            from_name: 'Madtape Waitlist',
+            replyto: waitlistData.email,
+            name: waitlistData.name,
+            email: waitlistData.email,
+            role: waitlistData.role,
+            message: `New waitlist signup:\n\nName: ${waitlistData.name}\nEmail: ${waitlistData.email}\nRole: ${waitlistData.role}\nTime: ${new Date().toLocaleString()}`
+          })
+        });
+        const web3Data = await web3Response.json();
+        if (!web3Data.success) console.warn('Web3Forms warning:', web3Data.message);
+      } catch (emailErr) {
+        console.warn('Email notification failed (non-blocking):', emailErr);
+      }
+
+      // 2. Save to Firebase with a 5s timeout, fall back to localStorage
+      try {
+        const firestoreTimeout = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Firestore timeout')), 5000)
+        );
+        await Promise.race([
+          addDoc(collection(db, 'waitlist'), payload),
+          firestoreTimeout
+        ]);
+      } catch (dbErr) {
+        console.warn('Firestore unavailable, saving locally:', dbErr.message);
         const currentLocal = JSON.parse(localStorage.getItem('madtape_waitlist') || '[]');
         currentLocal.push(payload);
         localStorage.setItem('madtape_waitlist', JSON.stringify(currentLocal));
