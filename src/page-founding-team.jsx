@@ -32,9 +32,9 @@ export function FoundingTeamPage() {
       initials: "NI"
     },
     {
-      name: "Hamza Ayyash Abu",
+      name: "Hamza AbuAyyash",
       role: "Co-Founder, AI Creative Director",
-      bio: "Hamza Ayyash Abu is a creative AI technologist and creative director with 15+ years of experience shaping visual identities, cinematic branding, public-space interventions, and AI-driven creative workflows. A KASK MA alumnus, his work connects semiotics, counter-memory, institutional critique, film identity, and generative media. He has led visual identity work for the Palestine Film Institute across international film contexts including Cannes, Berlinale, IDFA, and TIFF, and builds advanced AI creative pipelines using tools such as ComfyUI, LoRA training, ControlNet, Ollama, and projection-mapping systems. At Madtape, he leads the cinematic identity, AI visual language, creative systems, and filmmaker-facing artistic direction.",
+      bio: "Hamza AbuAyyash is a creative AI technologist and creative director with 15+ years of experience shaping visual identities, cinematic branding, public-space interventions, and AI-driven creative workflows. A KASK MA alumnus, his work connects semiotics, counter-memory, institutional critique, film identity, and generative media. He has led visual identity work for the Palestine Film Institute across international film contexts including Cannes, Berlinale, IDFA, and TIFF, and builds advanced AI creative pipelines using tools such as ComfyUI, LoRA training, ControlNet, Ollama, and projection-mapping systems. At Madtape, he leads the cinematic identity, AI visual language, creative systems, and filmmaker-facing artistic direction.",
       strengths: [
         "AI creative direction",
         "Cinematic branding",
@@ -44,7 +44,10 @@ export function FoundingTeamPage() {
         "Public-space and projection-based media"
       ],
       links: [
-        { label: "Website", url: "http://mz7el.com" }
+        { label: "Website", url: "https://el7mz.com" },
+        { label: "LinkedIn", url: "https://www.linkedin.com/in/hamzabuayyash/" },
+        { label: "GitHub", url: "https://github.com/7mz410" },
+        { label: "Instagram", url: "https://www.instagram.com/el.7mz/" }
       ],
       initials: "HA"
     },
