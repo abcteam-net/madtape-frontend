@@ -54,7 +54,7 @@ export function HomePage({ user, onLogin }) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
           body: JSON.stringify({
-            access_key: import.meta.env.VITE_WEB3FORMS_KEY || 'f9b499af-50ba-4dd9-a586-11b04e042ae2',
+            access_key: 'cef30d3d-da23-423a-8631-f6b30af53ba8',
             subject: `[Madtape] New Waitlist Signup — ${waitlistData.name}`,
             from_name: 'Madtape Waitlist',
             replyto: waitlistData.email,
