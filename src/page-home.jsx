@@ -140,7 +140,7 @@ export function HomePage({ user, onLogin }) {
             textTransform: "uppercase"
           }}>
             Madtape is the home of<br />
-            <span style={{ color: "var(--accent)" }}>short-form AI cinema.</span>
+            <span style={{ color: "var(--accent)", fontFamily: "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif" }}>short-form AI cinema.</span>
           </h1>
           
           <p style={{ fontSize: 20, lineHeight: 1.5, color: "var(--fg-dim)", maxWidth: "58ch", marginBottom: 40 }}>
