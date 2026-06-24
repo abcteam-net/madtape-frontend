@@ -163,14 +163,35 @@ export function SubmitPage() {
           <div>
             <div style={{ marginBottom: 32 }}>
               <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 8, fontWeight: 700 }}>
-                Creator Funnel
+                Creator Submissions
               </div>
               <h1 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 16 }}>
                 Submit Your AI Short Film
               </h1>
-              <p style={{ fontSize: 15, color: "var(--fg-dim)", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 15, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 24 }}>
                 We are selecting the first 100 AI filmmakers to feature in the Madtape early access launch. Review our guidelines and submit your project below.
               </p>
+
+              {/* Runtime guidelines block */}
+              <div style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderLeft: "3px solid var(--accent)",
+                borderRadius: 4,
+                padding: "16px 20px",
+                marginBottom: 8
+              }}>
+                <div style={{ fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, marginBottom: 8 }}>Runtime</div>
+                <p style={{ fontSize: 14, color: "#ccc", lineHeight: 1.65, margin: 0 }}>
+                  Madtape accepts cinematic AI short films from <strong style={{ color: "#fff" }}>3 to 10 minutes</strong>.
+                </p>
+                <p style={{ fontSize: 13, color: "#888", lineHeight: 1.65, margin: "8px 0 0" }}>
+                  Trailers, teasers, and proof-of-concept works may be reviewed separately as Trailer Selections during early access.
+                </p>
+                <p style={{ fontSize: 13, color: "#888", lineHeight: 1.65, margin: "8px 0 0" }}>
+                  We prioritize story-driven work with cinematic intent, atmosphere, originality, and clear creative direction.
+                </p>
+              </div>
             </div>
 
             {error && (
@@ -357,7 +378,7 @@ export function SubmitPage() {
                       cursor: "pointer"
                     }}
                   />
-                  <span>I confirm that I own or control all necessary rights to this film and its materials. *</span>
+                  <span>I confirm that I own or control the rights to this work and give Madtape permission to review and potentially feature it during early access. *</span>
                 </label>
 
                 <label htmlFor="permissionToFeature" style={{ 

@@ -7,6 +7,7 @@ import { ChallengesPage } from './page-challenges.jsx';
 import { ExplorePage } from './page-explore.jsx';
 import { HomePage } from './page-home.jsx';
 import { WatchPage } from './page-watch.jsx';
+import { SelectionsPage } from './page-selections.jsx';
 import { SubmitPage } from './page-submit.jsx';
 import { CreatorProgramPage } from './page-creator-program.jsx';
 import { EarlyAccessPage } from './page-early-access.jsx';
@@ -576,6 +577,7 @@ function PlatformApp() {
         <Routes>
           <Route path="/" element={<HomePage user={user} onLogin={login} />} />
           <Route path="/watch" element={<WatchPage />} />
+          <Route path="/selections" element={<SelectionsPage />} />
           <Route path="/submit" element={<SubmitPage />} />
           <Route path="/creator-program" element={<CreatorProgramPage />} />
           <Route path="/early-access" element={<EarlyAccessPage />} />

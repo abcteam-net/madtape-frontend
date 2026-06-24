@@ -61,6 +61,7 @@ export function PlatformNav({ user, onLogin, onLogout }) {
   };
 
   const links = [
+    ["selections", "Selections"],
     ["watch", "Watch"],
     ["submit", "Submit Film"],
     ["creator-program", "Creator Program"],
@@ -137,6 +138,7 @@ export function PlatformFooter() {
         </div>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           {[
+            ["selections", "Selections"],
             ["about", "About"],
             ["founding-team", "Founding Team"],
             ["submit", "Submit Film"],

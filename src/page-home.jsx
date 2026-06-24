@@ -364,7 +364,7 @@ export function HomePage({ user, onLogin }) {
 
           <div style={{ display: "grid", gap: 16, marginBottom: 40 }}>
             {[
-              "30 seconds to 3 minutes.",
+              "3 to 10 minutes for full AI short films.",
               "AI-generated or AI-assisted.",
               "Story-driven, not only visual experiments.",
               "Creator keeps ownership.",
@@ -431,6 +431,158 @@ export function HomePage({ user, onLogin }) {
           >
             Apply as a Creator
           </button>
+        </div>
+      </section>
+
+      {/* 6b. FIRST CREATOR SUBMISSIONS */}
+      <section style={{ padding: "100px 56px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: 840, margin: "0 auto" }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "var(--accent)", marginBottom: 16, fontWeight: 700 }}>
+            Creator Selections
+          </div>
+
+          <h2 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 56, lineHeight: 1.0, marginBottom: 24, letterSpacing: "0.01em" }}>
+            First Creator Submissions Are In
+          </h2>
+
+          <p style={{ fontSize: 16, color: "var(--fg-dim)", lineHeight: 1.6, marginBottom: 40 }}>
+            Madtape has started receiving AI-native films and trailers from external creators. These early selections mark the beginning of our curated pre-launch catalog.
+          </p>
+
+          {/* Compact selection cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, marginBottom: 40 }}>
+            {[
+              {
+                id: "prompting-reality-trailer",
+                title: "Prompting Reality — Trailer",
+                creator: "Michal Moc",
+                status: "Founding Trailer Selection",
+                statusType: "trailer",
+                runtime: "2m 19s",
+                embedId: "mDqHvSYiFfs",
+              },
+              {
+                id: "eyes-and-ears",
+                title: "Eyes and Ears",
+                creator: "Yoel Reina",
+                status: "Early Selection",
+                statusType: "full",
+                runtime: "7m 27s",
+                embedId: "21jHAuyGYdc",
+              },
+            ].map((film) => (
+              <div
+                key={film.id}
+                style={{
+                  background: "#111",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 6,
+                  overflow: "hidden",
+                  transition: "border-color 0.2s, transform 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgba(255,255,255,0.07)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }}
+              >
+                {/* Thumbnail */}
+                <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", background: "#000" }}>
+                  <img
+                    src={`https://img.youtube.com/vi/${film.embedId}/maxresdefault.jpg`}
+                    alt={`${film.title} thumbnail`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    onError={(e) => {
+                      e.currentTarget.src = `https://img.youtube.com/vi/${film.embedId}/hqdefault.jpg`;
+                    }}
+                  />
+                  <div style={{
+                    position: "absolute",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.25)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center"
+                  }}>
+                    <div style={{
+                      width: 40,
+                      height: 40,
+                      background: "var(--accent)",
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      boxShadow: "0 2px 12px rgba(229,9,20,0.5)"
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><polygon points="8,5 19,12 8,19" /></svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Card info */}
+                <div style={{ padding: "16px 18px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{
+                      fontSize: 9,
+                      fontWeight: 700,
+                      padding: "2px 8px",
+                      background: film.statusType === "trailer" ? "rgba(229,9,20,0.12)" : "rgba(255,255,255,0.06)",
+                      color: film.statusType === "trailer" ? "var(--accent)" : "#ccc",
+                      border: `1px solid ${film.statusType === "trailer" ? "rgba(229,9,20,0.3)" : "rgba(255,255,255,0.1)"}`,
+                      borderRadius: 3,
+                      letterSpacing: "0.1em",
+                      textTransform: "uppercase",
+                    }}>{film.status}</span>
+                    <span style={{ fontSize: 11, color: "#666" }}>{film.runtime}</span>
+                  </div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 4 }}>{film.title}</div>
+                  <div style={{ fontSize: 12, color: "#777" }}>{film.creator}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+            <button
+              onClick={() => navigate("/selections")}
+              style={{
+                background: "var(--accent)",
+                color: "#fff",
+                padding: "14px 28px",
+                fontSize: 15,
+                fontWeight: 700,
+                borderRadius: 4,
+                border: "none",
+                cursor: "pointer",
+                transition: "background 0.2s"
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = "#ff1f2f"}
+              onMouseLeave={(e) => e.currentTarget.style.background = "var(--accent)"}
+            >
+              View Madtape Selections
+            </button>
+            <button
+              onClick={() => navigate("/submit")}
+              style={{
+                background: "none",
+                color: "#ccc",
+                padding: "14px 28px",
+                fontSize: 15,
+                fontWeight: 600,
+                borderRadius: 4,
+                border: "1px solid rgba(255,255,255,0.12)",
+                cursor: "pointer",
+                transition: "all 0.2s"
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.24)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#ccc"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+            >
+              Submit Your Film
+            </button>
+          </div>
         </div>
       </section>
 
